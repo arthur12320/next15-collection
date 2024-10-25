@@ -1,14 +1,12 @@
-import { sql } from "drizzle-orm";
 import {
     index,
-    integer,
-    numeric,
     pgTable,
     serial,
     text,
     boolean,
     timestamp,
     varchar,
+    integer,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
@@ -23,6 +21,7 @@ export const games = pgTable(
 );
 
 export type Game = typeof games.$inferSelect;
+export type NewGame = typeof games.$inferInsert;
 
 
 export const gameEntries = pgTable(
@@ -30,10 +29,10 @@ export const gameEntries = pgTable(
     {
         id: serial("id").primaryKey(),
         name: text("name").notNull(),
-        game_id: text("game_id")
+        game_id: integer("game_id")
             .notNull()
             .references(() => games.id, { onDelete: "cascade" }),
-        user_id: text("user_id")
+        user_id: integer("user_id")
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
         purchaseDate: timestamp("purchased_at").defaultNow(),
@@ -50,9 +49,7 @@ export const gameEntries = pgTable(
 );
 
 export type GameEntry = typeof gameEntries.$inferSelect;
-
-// ADD RELATIONS
-
+export type NewGameEntry = typeof gameEntries.$inferInsert;
 
 export const users = pgTable("users", {
     id: serial("id").primaryKey(),
@@ -64,3 +61,17 @@ export const users = pgTable("users", {
 
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
+
+// ADD RELATIONS
+
+export const gameEntriesRelations = relations(gameEntries, ({ one }) => ({
+    game: one(games, {
+        fields: [gameEntries.game_id],
+        references: [games.id],
+    }),
+    user: one(users, {
+        fields: [gameEntries.user_id],
+        references: [users.id],
+    }),
+}));
+
