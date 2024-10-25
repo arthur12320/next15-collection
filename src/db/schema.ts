@@ -64,6 +64,10 @@ export type NewUser = typeof users.$inferInsert;
 
 // ADD RELATIONS
 
+export const gameRelations = relations(games, ({ many }) => ({
+    gameEntries: many(gameEntries),
+}));
+
 export const gameEntriesRelations = relations(gameEntries, ({ one }) => ({
     game: one(games, {
         fields: [gameEntries.game_id],
@@ -73,5 +77,9 @@ export const gameEntriesRelations = relations(gameEntries, ({ one }) => ({
         fields: [gameEntries.user_id],
         references: [users.id],
     }),
+}));
+
+export const userRelations = relations(users, ({ many }) => ({
+    gameEntries: many(gameEntries),
 }));
 

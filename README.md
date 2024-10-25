@@ -3,7 +3,10 @@ This is a a next15 project of a games collection.
 TODO:
 
 - [x] setup tailwindCSS
-- [ ] setup chadcdn
+- [x] setup shadcdn
 - [x] setup DB [drizzle-orm + vercel postgres]
+  - [ ] setup real schema
+  - [ ] setup seed
+  - [ ] setup queries
 - [ ] setup image upload [vercel blob]
 - [ ] setup auth
