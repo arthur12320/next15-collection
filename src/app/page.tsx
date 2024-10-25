@@ -6,7 +6,7 @@ export default async function Home() {
   return (
     <div>
       <h1 className="text-4xl font-bold">React test</h1>
-      <Button>Click me</Button>
+      <Button>Click me develop</Button>
       <ul>
         {users.map((user) => (
           <li key={user.id}>{user.username}</li>
