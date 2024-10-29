@@ -1,16 +1,23 @@
+import { createJiti } from "jiti";
+import { fileURLToPath } from "node:url";
+const jiti = createJiti(fileURLToPath(import.meta.url));
+
+// Import env here to validate during build. Using jiti we can import .ts files :)
+await jiti.import("./src/env/server.ts");
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    experimental: {
-      ppr: true,
-    },
-    typescript: {
-      ignoreBuildErrors: true,
-    },
-    eslint: {
-      ignoreDuringBuilds: true,
-    },
-    images: {
-      minimumCacheTTL: 31536000,
+  experimental: {
+    ppr: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  images: {
+    minimumCacheTTL: 31536000,
     //   remotePatterns: [
     //     {
     //       protocol: "https",
@@ -20,7 +27,7 @@ const nextConfig = {
     //       search: "",
     //     },
     //   ],
-    },
-  };
-  
-  export default nextConfig;
+  },
+};
+
+export default nextConfig;

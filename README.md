@@ -9,7 +9,7 @@ TODO:
   - [ ] setup seed
   - [ ] setup queries
   - [ ] setup starting migration
-- [ ] add typesafe env vars
+- [x] add typesafe env vars
 - [ ] setup image upload [vercel blob]
 - [ ] setup auth
 - [x] add navbar
