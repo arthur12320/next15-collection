@@ -1,3 +1,5 @@
+import Navbar from "@/components/navbar";
+import { ThemeProvider } from "@/components/theme-provider";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
@@ -26,9 +28,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased w-screen h-screen flex flex-col`}
       >
-        {children}
+        <ThemeProvider attribute="class" defaultTheme="system">
+          <Navbar />
+          <main className="flex-grow">{children}</main>
+        </ThemeProvider>
       </body>
     </html>
   );

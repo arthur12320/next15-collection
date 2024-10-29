@@ -8,5 +8,15 @@ TODO:
   - [ ] setup real schema
   - [ ] setup seed
   - [ ] setup queries
+  - [ ] setup starting migration
+- [ ] add typesafe env vars
 - [ ] setup image upload [vercel blob]
 - [ ] setup auth
+- [x] add navbar
+- [ ] add footer
+- [x] add theme toggle
+- [ ] add pages
+  - [ ] home
+  - [ ] collections
+  - [ ] login
+  - [ ] register
