@@ -1,5 +1,9 @@
+import Navbar from "@/components/navbar";
+import SessionWrapper from "@/components/sessionWrapper";
+import { ThemeProvider } from "@/components/theme-provider";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { Suspense } from "react";
 import "./globals.css";
 
 const geistSans = localFont({
@@ -24,11 +28,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="w-screen h-screen">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased w-screen h-screen flex flex-col`}
       >
-        {children}
+        <SessionWrapper>
+          <ThemeProvider attribute="class" defaultTheme="system">
+            <Navbar />
+            <Suspense>
+              <main className="flex-grow">{children}</main>
+            </Suspense>
+          </ThemeProvider>
+        </SessionWrapper>
       </body>
     </html>
   );
