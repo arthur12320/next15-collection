@@ -12,9 +12,15 @@ TODO:
 - [x] add typesafe env vars
 - [ ] setup image upload [vercel blob]
 - [ ] setup auth
+  - [x] setup next-auth
+  - [x] setup google oauth
+  - [ ] connect to database
+  - [ ] setup login/logout/signin redirects
+  - [ ] setup middleware for auth
 - [x] add navbar
 - [ ] add footer
 - [x] add theme toggle
+- [ ] add loading page for suspense
 - [ ] add pages
   - [ ] home
   - [ ] collections

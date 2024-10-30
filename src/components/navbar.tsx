@@ -13,14 +13,13 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Gamepad2, Menu, User } from "lucide-react";
+import { Gamepad2, Menu } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
 import { ThemeToggle } from "./ThemeToggle";
+import AuthButton from "./authButton";
 
 export default function Navbar() {
-  const [isLoggedIn] = useState(false); // Replace with actual auth state
   const pathname = usePathname();
 
   const navItems = [
@@ -88,21 +87,7 @@ export default function Navbar() {
         <div className="flex flex-1 items-center justify-end space-x-4 w-full">
           <ThemeToggle />
           <nav className="flex items-center space-x-2">
-            {isLoggedIn ? (
-              <Button variant="ghost" size="icon">
-                <User className="h-5 w-5" />
-                <span className="sr-only">Account</span>
-              </Button>
-            ) : (
-              <>
-                <Button variant="ghost" asChild>
-                  <Link href="/login">Login</Link>
-                </Button>
-                <Button asChild>
-                  <Link href="/register">Register</Link>
-                </Button>
-              </>
-            )}
+            <AuthButton />
           </nav>
         </div>
       </div>
