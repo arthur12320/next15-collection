@@ -16,7 +16,7 @@ TODO:
   - [x] setup google oauth
   - [ ] connect to database
   - [ ] setup login/logout/signin redirects
-  - [ ] setup middleware for auth
+  - [ ] see if its possible to use middleware
 - [x] add navbar
 - [ ] add footer
 - [x] add theme toggle
