@@ -2,16 +2,17 @@ import { auth } from "../auth";
 
 const publicRoutes = [
     "/",
-]
+    "/collections",
+];
 
 const authRoutes = [
     "/auth/login",
     "/auth/register"
-]
+];
 
 const apiAuthPrefix = "api/auth";
 
-export default auth((req: any) => {
+export default auth((req) => {
     // req.auth
     const { nextUrl } = req;
     const isLoggedIn = !!req.auth;
@@ -20,7 +21,7 @@ export default auth((req: any) => {
     const isApiAuthRoute = nextUrl.pathname.includes(apiAuthPrefix);
 
     if (isApiAuthRoute) {
-        return null
+        return;
     }
 
     if (!isPublicRoute && !isLoggedIn) {
@@ -28,7 +29,7 @@ export default auth((req: any) => {
         return Response.redirect(new URL("/", req.url));
     }
 
-    return null
+    return;
 });
 
 // Optionally, don't invoke Middleware on some paths
