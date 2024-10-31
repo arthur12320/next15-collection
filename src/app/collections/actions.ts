@@ -9,7 +9,6 @@ import { redirect } from "next/navigation";
 import { auth } from "../../../auth";
 
 export async function createCollection(prevState: unknown, formData: FormData) {
-    console.log("got here");
 
     const submission = parseWithZod(formData, {
         schema: insertCollectionSchema,
@@ -31,5 +30,4 @@ export async function createCollection(prevState: unknown, formData: FormData) {
     });
 
     revalidatePath("/collections");
-    redirect("/collections");
 }

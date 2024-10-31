@@ -2,7 +2,6 @@ import { auth } from "../auth";
 
 const publicRoutes = [
     "/",
-    "/collections",
 ];
 
 const authRoutes = [
@@ -25,7 +24,6 @@ export default auth((req) => {
     }
 
     if (!isPublicRoute && !isLoggedIn) {
-        console.log("=================ROUTE", req.nextUrl.pathname);
         return Response.redirect(new URL("/", req.url));
     }
 

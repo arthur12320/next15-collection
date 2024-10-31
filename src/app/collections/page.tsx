@@ -4,7 +4,6 @@ import CreateCollectionForm from "./createCollectionForm";
 
 export default async function TestPage() {
   const collections = await getCollections();
-  console.log(collections);
   return (
     <Card className="mx-auto max-w-2xl mt-10">
       <CardContent>

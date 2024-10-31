@@ -25,5 +25,10 @@ TODO:
 - [ ] add pages
   - [ ] home
   - [ ] collections
+    - [ ] add optimistic updates
+    - [ ] add pagination
+    - [x] add create collection form
+    - [ ] add collection card
+    - [ ] add collection page
   - [ ] login
   - [ ] register
