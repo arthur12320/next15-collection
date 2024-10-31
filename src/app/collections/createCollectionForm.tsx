@@ -44,7 +44,9 @@ export default function CreateCollectionForm() {
       {!fields.name.valid && (
         <div className="text-red-500 text-sm">{fields.name.valid}</div>
       )}
-      <Button className="w-full">Create new colletion</Button>
+      <Button type="submit" className="w-full">
+        Create new colletion
+      </Button>
     </form>
   );
 }

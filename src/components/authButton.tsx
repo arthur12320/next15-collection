@@ -17,7 +17,6 @@ import {
 export default function AuthButton() {
   const { data, status } = useSession();
   const [isOpen, setIsOpen] = useState(false);
-  console.log(data);
 
   if (status === "loading") {
     return <p>Loading...</p>;
