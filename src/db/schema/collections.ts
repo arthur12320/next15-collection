@@ -1,3 +1,4 @@
+import { InferInsertModel, InferSelectModel } from "drizzle-orm";
 import { pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import users from "./users";
@@ -17,5 +18,7 @@ export const insertCollectionSchema = createInsertSchema(collections).omit({
     createdAt: true,
 });
 
+export type SelectCollection = InferSelectModel<typeof collections>;
+export type InsertCollection = InferInsertModel<typeof collections>;
 
 export default collections;

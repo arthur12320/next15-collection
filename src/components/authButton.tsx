@@ -17,10 +17,7 @@ import {
 export default function AuthButton() {
   const { data, status } = useSession();
   const [isOpen, setIsOpen] = useState(false);
-
-  if (status === "loading") {
-    return <p>Loading...</p>;
-  }
+  const [isLoading, setIsLoading] = useState(false);
 
   if (status === "authenticated") {
     return (
@@ -53,10 +50,13 @@ export default function AuthButton() {
   }
   return (
     <Button
-      onClick={() => signIn("google")}
+      onClick={() => {
+        setIsLoading(true);
+        signIn("google");
+      }}
       className="flex items-center justify-center rounded-md  px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
     >
-      Sign In
+      {isLoading ? "Loading..." : "Sign in with Google"}
     </Button>
   );
 }
