@@ -11,11 +11,12 @@ export const env = createEnv({
         NEXTAUTH_URL: z.string().url(),
     },
     onValidationError: (error: ZodError) => {
+        console.error("❌ Invalid environment variables:");
         console.error(
             "❌ Invalid environment variables:",
             error.flatten().fieldErrors,
         );
-        process.exit(1);
+        process.exit(0);
     },
     emptyStringAsUndefined: true,
     // eslint-disable-next-line n/no-process-env

@@ -14,9 +14,10 @@ TODO:
 - [ ] setup auth
   - [x] setup next-auth
   - [x] setup google oauth
-  - [ ] connect to database
+  - [x] connect to database
   - [ ] setup login/logout/signin redirects
-  - [ ] see if its possible to use middleware
+  - [x] see if its possible to use middleware
+  - [ ] finish following the [tutorial](https://www.youtube.com/watch?v=1MTyCvS05V4&t=7812s&ab_channel=CodeWithAntonio)
 - [x] add navbar
 - [ ] add footer
 - [x] add theme toggle
