@@ -9,6 +9,7 @@ await jiti.import("./src/env/server.ts");
 const nextConfig = {
   experimental: {
     ppr: true,
+    dynamicIO: true,
   },
   typescript: {
     ignoreBuildErrors: true,

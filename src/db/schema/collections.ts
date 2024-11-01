@@ -1,6 +1,7 @@
+import { InferInsertModel, InferSelectModel, relations } from "drizzle-orm";
 import { pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
-import users from "./users";
+import users, { SelectUser } from "./users";
 
 const collections = pgTable("collection", {
     id: uuid("id").primaryKey().defaultRandom(),
@@ -17,5 +18,16 @@ export const insertCollectionSchema = createInsertSchema(collections).omit({
     createdAt: true,
 });
 
+export const collectionsRelations = relations(collections, ({ one }) => ({
+    user: one(users, {
+        fields: [collections.userId],
+        references: [users.id],
+    }),
+}));
+
+export type SelectCollection = InferSelectModel<typeof collections>;
+export type InsertCollection = InferInsertModel<typeof collections>;
+
+export type SelectCollectionWithUser = InferSelectModel<typeof collections> & { user: SelectUser };
 
 export default collections;

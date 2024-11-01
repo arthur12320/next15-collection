@@ -1,26 +1,34 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useForm } from "@conform-to/react";
 
-import { insertCollectionSchema } from "@/db/schema/collections";
 import { cn } from "@/lib/utils";
-import { parseWithZod } from "@conform-to/zod";
-import { useActionState } from "react";
-import { createCollection } from "./actions";
+import { FieldMetadata, FormMetadata } from "@conform-to/react";
 
-export default function CreateCollectionForm() {
-  const [lastResult, action] = useActionState(createCollection, undefined);
-  const [form, fields] = useForm({
-    lastResult,
-    //Reuse the validation logic on the client
-    onValidate({ formData }) {
-      return parseWithZod(formData, { schema: insertCollectionSchema });
+type CreateCollectionFormProps = {
+  fields: Required<{
+    name: FieldMetadata<
+      string,
+      {
+        name: string;
+      },
+      string[]
+    >;
+  }>;
+  form: FormMetadata<
+    {
+      name: string;
     },
-    // Validate the form on blur event triggered
-    shouldValidate: "onBlur",
-    shouldRevalidate: "onInput",
-  });
+    string[]
+  >;
+  action: (payload: FormData) => void;
+};
+
+export default function CreateCollectionForm({
+  fields,
+  form,
+  action,
+}: CreateCollectionFormProps) {
   return (
     <form
       id={form.id}

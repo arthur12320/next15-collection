@@ -7,7 +7,10 @@ export const getCollections = async () => {
     if (!session?.user) return null;
     const collections = await db.query.collections.findMany({
         where: (collections, { eq }) => eq(collections.userId, session?.user?.id as string),
-        orderBy: (collections, { asc }) => asc(collections.name),
+        orderBy: (collections, { asc }) => asc(collections.createdAt),
+        with: {
+            user: true
+        }
     });
 
     return collections;
