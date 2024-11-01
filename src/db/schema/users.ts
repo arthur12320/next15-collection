@@ -1,3 +1,4 @@
+import { InferSelectModel } from "drizzle-orm";
 import { pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 
 const users = pgTable("user", {
@@ -7,5 +8,7 @@ const users = pgTable("user", {
     emailVerified: timestamp("emailVerified", { mode: "date" }),
     image: varchar("image", { length: 2048 }).notNull(),
 });
+
+export type SelectUser = InferSelectModel<typeof users>;
 
 export default users;

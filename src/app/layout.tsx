@@ -36,7 +36,7 @@ export default function RootLayout({
           <ThemeProvider attribute="class" defaultTheme="system">
             <Navbar />
             <Suspense>
-              <main className="flex-grow">{children}</main>
+              <main className="flex-grow overflow-x-hidden">{children}</main>
             </Suspense>
           </ThemeProvider>
         </SessionWrapper>
