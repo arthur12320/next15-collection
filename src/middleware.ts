@@ -1,4 +1,3 @@
-export const maxDuration = 50;
 import { auth } from "../auth";
 
 const publicRoutes = [
@@ -15,21 +14,18 @@ const apiAuthPrefix = "api/auth";
 export default auth((req) => {
     // req.auth
     const { nextUrl } = req;
-    console.log("log from middleware");
-    console.log(nextUrl);
     const isLoggedIn = !!req.auth;
-    console.log(req.auth);
 
-    // const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
-    // const isApiAuthRoute = nextUrl.pathname.includes(apiAuthPrefix);
+    const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
+    const isApiAuthRoute = nextUrl.pathname.includes(apiAuthPrefix);
 
-    // if (isApiAuthRoute) {
-    //     return;
-    // }
+    if (isApiAuthRoute) {
+        return;
+    }
 
-    // if (!isPublicRoute && !isLoggedIn) {
-    //     return Response.redirect(new URL("/", req.url));
-    // }
+    if (!isPublicRoute && !isLoggedIn) {
+        return Response.redirect(new URL("/", req.url));
+    }
 
     return;
 });
