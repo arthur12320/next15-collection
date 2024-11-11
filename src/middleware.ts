@@ -14,6 +14,8 @@ const apiAuthPrefix = "api/auth";
 export default auth((req) => {
     // req.auth
     const { nextUrl } = req;
+    console.log("log from middleware");
+    console.log(nextUrl);
     const isLoggedIn = !!req.auth;
 
     const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
