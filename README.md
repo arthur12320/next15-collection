@@ -25,10 +25,13 @@ TODO:
 - [ ] add pages
   - [ ] home
   - [ ] collections
-    - [ ] add optimistic updates
+    - [x] add optimistic updates
     - [ ] add pagination
+    - [x] add exclude option
     - [x] add create collection form
+    - [ ] add collection delete with optimistic updates??
     - [ ] add collection card
     - [ ] add collection page
+  - [ ] games
   - [ ] login
   - [ ] register

@@ -1,7 +1,7 @@
 import Navbar from "@/components/navbar";
-import SessionWrapper from "@/components/sessionWrapper";
 import { ThemeProvider } from "@/components/theme-provider";
 import type { Metadata } from "next";
+import { SessionProvider } from "next-auth/react";
 import localFont from "next/font/local";
 import { Suspense } from "react";
 import "./globals.css";
@@ -32,14 +32,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased w-screen h-screen flex flex-col`}
       >
-        <SessionWrapper>
+        <SessionProvider>
           <ThemeProvider attribute="class" defaultTheme="system">
             <Navbar />
             <Suspense>
               <main className="flex-grow overflow-x-hidden">{children}</main>
             </Suspense>
           </ThemeProvider>
-        </SessionWrapper>
+        </SessionProvider>
       </body>
     </html>
   );

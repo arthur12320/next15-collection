@@ -1,3 +1,4 @@
+import { InferInsertModel, InferSelectModel, relations } from "drizzle-orm";
 import { boolean, pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 import collections from "./collections";
 import games from "./games";
@@ -14,10 +15,24 @@ const gameEntry = pgTable("game_entry", {
     gameId: uuid("gameId")
         .notNull()
         .references(() => games.id, { onDelete: "cascade" }),
-    collectionId: uuid("collectionId")
+    collectionId: uuid("collection_id")
         .notNull()
         .references(() => collections.id, { onDelete: "cascade" }),
 
 });
+
+export const gameEntryRelations = relations(gameEntry, ({ one }) => ({
+    user: one(users, {
+        fields: [gameEntry.userId],
+        references: [users.id],
+    }),
+    collection: one(collections, {
+        fields: [gameEntry.collectionId],
+        references: [collections.id],
+    }),
+}));
+
+export type SelectGameEntry = InferSelectModel<typeof gameEntry>;
+export type InsertGameEntry = InferInsertModel<typeof gameEntry>;
 
 export default gameEntry;
