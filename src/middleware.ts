@@ -4,10 +4,10 @@ const publicRoutes = [
     "/",
 ];
 
-const authRoutes = [
-    "/auth/login",
-    "/auth/register"
-];
+// const authRoutes = [
+//     "/auth/login",
+//     "/auth/register"
+// ];
 
 const apiAuthPrefix = "api/auth";
 

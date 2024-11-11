@@ -4,6 +4,7 @@ import db from "@/db";
 import collections, { insertCollectionSchema } from "@/db/schema/collections";
 import { parseWithZod } from "@conform-to/zod";
 
+import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { auth } from "../../../auth";
@@ -28,6 +29,18 @@ export async function createCollection(prevState: unknown, formData: FormData) {
         name: submission.value.name,
         userId: session.user.id as string,
     });
+
+    revalidatePath("/collections");
+}
+
+export async function deleteCollection(id: string) {
+    const session = await auth();
+
+    if (!session?.user) {
+        return redirect("/");
+    }
+
+    await db.delete(collections).where(and(eq(collections.id, id), eq(collections.userId, session.user.id || "")));
 
     revalidatePath("/collections");
 }

@@ -18,6 +18,7 @@ export default function AuthButton() {
   const { data, status } = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  console.log(data);
 
   if (status === "authenticated") {
     return (
