@@ -3,7 +3,6 @@ import { ThemeProvider } from "@/components/theme-provider";
 import type { Metadata } from "next";
 import { SessionProvider } from "next-auth/react";
 import localFont from "next/font/local";
-import { Suspense } from "react";
 import "./globals.css";
 
 const geistSans = localFont({
@@ -35,9 +34,8 @@ export default function RootLayout({
         <SessionProvider>
           <ThemeProvider attribute="class" defaultTheme="system">
             <Navbar />
-            <Suspense>
-              <main className="flex-grow overflow-x-hidden">{children}</main>
-            </Suspense>
+
+            <main className="flex-grow overflow-x-hidden">{children}</main>
           </ThemeProvider>
         </SessionProvider>
       </body>
