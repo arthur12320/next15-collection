@@ -1,3 +1,4 @@
+export const maxDuration = 50;
 import { auth } from "../auth";
 
 const publicRoutes = [
