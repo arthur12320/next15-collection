@@ -1,5 +1,5 @@
 "use client";
-import { deleteCollection } from "@/app/collections/actions";
+import { deleteCollection } from "@/app/actions/collectionActions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SelectCollectionWithUser } from "@/db/schema/collections";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";

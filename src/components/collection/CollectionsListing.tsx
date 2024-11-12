@@ -1,5 +1,5 @@
 "use client";
-import { createCollection } from "@/app/collections/actions";
+import { createCollection } from "@/app/actions/collectionActions";
 import {
   InsertCollection,
   insertCollectionSchema,
