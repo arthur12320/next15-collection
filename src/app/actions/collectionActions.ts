@@ -44,3 +44,20 @@ export async function deleteCollection(id: string) {
 
     revalidatePath("/collections");
 }
+
+export async function getUserCollections() {
+    const session = await auth();
+
+    if (!session?.user) {
+        return redirect("/");
+    }
+
+    const collections = await db.query.collections.findMany({
+        where: (collections, { eq }) => eq(collections.userId, session?.user?.id as string),
+        orderBy: (collections, { asc }) => asc(collections.createdAt),
+        with: {
+            user: true
+        }
+    });
+    return collections;
+}

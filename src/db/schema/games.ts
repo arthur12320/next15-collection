@@ -1,3 +1,4 @@
+import { InferSelectModel } from "drizzle-orm";
 import { pgTable, uuid, varchar } from "drizzle-orm/pg-core";
 import platforms from "./platforms";
 
@@ -8,5 +9,7 @@ const games = pgTable("game", {
         .notNull()
         .references(() => platforms.id, { onDelete: "cascade" }),
 });
+
+export type SelectGame = InferSelectModel<typeof games>;
 
 export default games;

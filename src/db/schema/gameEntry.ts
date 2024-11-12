@@ -32,6 +32,8 @@ export const gameEntryRelations = relations(gameEntry, ({ one }) => ({
     }),
 }));
 
+
+
 export type SelectGameEntry = InferSelectModel<typeof gameEntry>;
 export type InsertGameEntry = InferInsertModel<typeof gameEntry>;
 

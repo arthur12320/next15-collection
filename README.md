@@ -33,5 +33,7 @@ TODO:
     - [ ] add collection card
     - [ ] add collection page
   - [ ] games
+    - [x] add create game form
+    - [ ] add form validation !
   - [ ] login
   - [ ] register
