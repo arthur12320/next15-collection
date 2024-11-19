@@ -7,6 +7,9 @@ await jiti.import("./src/env/server.ts");
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    dynamicIO: true,
+  },
   typescript: {
     ignoreBuildErrors: true,
   },
