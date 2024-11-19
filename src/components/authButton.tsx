@@ -15,10 +15,9 @@ import {
 } from "./ui/dropdown-menu";
 
 export default function AuthButton() {
-  const { data, status } = useSession();
+  const { data: session, status } = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  console.log(data);
 
   if (status === "authenticated") {
     return (
@@ -26,7 +25,7 @@ export default function AuthButton() {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-8 w-8 rounded-full">
             <Avatar className="h-8 w-8">
-              <AvatarImage src={data.user?.image || ""} alt="User avatar" />
+              <AvatarImage src={session.user?.image || ""} alt="User avatar" />
               <AvatarFallback>U</AvatarFallback>
             </Avatar>
           </Button>
@@ -36,7 +35,7 @@ export default function AuthButton() {
             <div className="flex flex-col space-y-1">
               <p className="text-sm font-medium leading-none">User</p>
               <p className="text-xs leading-none text-muted-foreground">
-                {data.user?.email}
+                {session.user?.email}
               </p>
             </div>
           </DropdownMenuLabel>

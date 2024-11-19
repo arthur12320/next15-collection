@@ -26,6 +26,7 @@ TODO:
   - [ ] home
   - [ ] collections
     - [x] add optimistic updates
+    - [ ] add test for collection id
     - [ ] add pagination
     - [x] add exclude option
     - [x] add create collection form
