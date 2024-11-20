@@ -18,15 +18,15 @@ const nextConfig = {
   },
   images: {
     minimumCacheTTL: 31536000,
-    //   remotePatterns: [
-    //     {
-    //       protocol: "https",
-    //       hostname: "bevgyjm5apuichhj.public.blob.vercel-storage.com",
-    //       port: "",
-    //       pathname: "/**",
-    //       search: "",
-    //     },
-    //   ],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "drsxkhlvxhgfqj45.public.blob.vercel-storage.com",
+        port: "",
+        pathname: "/**",
+        search: "",
+      },
+    ],
   },
 };
 

@@ -19,7 +19,6 @@ export const getCollections = async () => {
 
 export const getCollection = async (id: string) => {
     const session = await auth();
-    console.log(id[0]);
 
     if (!session?.user) return null;
     const collections = await db.query.collections.findFirst({
@@ -28,7 +27,8 @@ export const getCollection = async (id: string) => {
         with: {
             user: true,
             games: true
-        }
+        },
+
     });
 
     return collections;
@@ -42,4 +42,14 @@ export const getPlatforms = async () => {
         console.error("Error fetching platforms:", error);
         return [];
     }
+};
+
+export const getGame = async (id: string) => {
+    const session = await auth();
+    if (!session?.user) return null;
+    const game = await db.query.games.findFirst({
+        where: (games, { eq }) => eq(games.id, id),
+    });
+
+    return game;
 };
