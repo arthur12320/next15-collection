@@ -101,7 +101,6 @@ export default function AddGameForm() {
 
   const handleSubmit = async (formData: FormData) => {
     await formAction(formData);
-    console.log(formResult);
     if (formResult?.error) {
       toast({
         title: "Error",

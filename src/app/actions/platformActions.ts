@@ -7,10 +7,6 @@ export const getPlatforms = async () => {
     cacheLife("days");
     try {
         const platformList = await db.query.platforms.findMany();
-        // to test the cache
-        // for (let i = 0; i < 100000; i++) {
-        //     console.log(i);
-        // }
         return platformList;
     } catch (error) {
         console.error("Error fetching platforms:", error);

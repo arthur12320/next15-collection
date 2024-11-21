@@ -1,7 +1,8 @@
 "use client";
 
 import { LogOut } from "lucide-react";
-import { signIn, signOut, useSession } from "next-auth/react";
+import { User } from "next-auth";
+import { signIn, signOut } from "next-auth/react";
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
@@ -14,18 +15,17 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 
-export default function AuthButton() {
-  const { data: session, status } = useSession();
+export default function AuthButton({ user }: { user: User | undefined }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  if (status === "authenticated") {
+  if (user) {
     return (
       <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-8 w-8 rounded-full">
             <Avatar className="h-8 w-8">
-              <AvatarImage src={session.user?.image || ""} alt="User avatar" />
+              <AvatarImage src={user?.image || ""} alt="User avatar" />
               <AvatarFallback>U</AvatarFallback>
             </Avatar>
           </Button>
@@ -35,7 +35,7 @@ export default function AuthButton() {
             <div className="flex flex-col space-y-1">
               <p className="text-sm font-medium leading-none">User</p>
               <p className="text-xs leading-none text-muted-foreground">
-                {session.user?.email}
+                {user?.email}
               </p>
             </div>
           </DropdownMenuLabel>

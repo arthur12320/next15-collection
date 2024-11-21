@@ -1,4 +1,4 @@
-"use client";
+// "use client";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -16,16 +16,17 @@ import {
 } from "@/components/ui/sheet";
 import { Gamepad2, Menu } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Suspense } from "react";
+import { auth } from "../../auth";
 import { ThemeToggle } from "./ThemeToggle";
 import AuthButton from "./authButton";
 
-export default function Navbar() {
-  const pathname = usePathname();
-
+export default async function Navbar() {
+  const session = await auth();
   const navItems = [
     { name: "Home", href: "/" },
     { name: "Collections", href: "/collections" },
+    { name: "Create Game", href: "/addGame" },
   ];
 
   return (
@@ -77,9 +78,7 @@ export default function Navbar() {
               <NavigationMenuItem key={item.href}>
                 <NavigationMenuLink
                   href={item.href}
-                  className={`${navigationMenuTriggerStyle()}group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50 ${
-                    pathname === item.href ? "bg-accent" : ""
-                  }`}
+                  className={`${navigationMenuTriggerStyle()}group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50`}
                 >
                   {item.name}
                 </NavigationMenuLink>
@@ -90,7 +89,9 @@ export default function Navbar() {
         <div className="flex flex-1 items-center justify-end space-x-4 w-full">
           <ThemeToggle />
           <nav className="flex items-center space-x-2">
-            <AuthButton />
+            <Suspense>
+              <AuthButton user={session?.user} />
+            </Suspense>
           </nav>
         </div>
       </div>
