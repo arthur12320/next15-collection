@@ -26,7 +26,7 @@ export default async function Navbar() {
   const navItems = [
     { name: "Home", href: "/" },
     { name: "Collections", href: "/collections" },
-    { name: "Create Game", href: "/addGame" },
+    { name: "Add Game", href: "/addGame" },
   ];
 
   return (

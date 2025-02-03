@@ -1,21 +1,19 @@
 "use client";
-import { addGame, searchGames } from "@/app/actions/gameActions";
+
+import { getUserCollections } from "@/app/actions/collectionActions";
+import { addGame } from "@/app/actions/gameActions";
+import { getPlatforms } from "@/app/actions/platformActions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { SelectGame } from "@/db/schema/games";
-import { SelectPlatform } from "@/db/schema/platforms";
-import debounce from "lodash/debounce";
-
-import { getUserCollections } from "@/app/actions/collectionActions";
-import { getPlatforms } from "@/app/actions/platformActions";
-import { SelectCollection } from "@/db/schema/collections";
+import type { SelectCollection } from "@/db/schema/collections";
+import type { SelectPlatform } from "@/db/schema/platforms";
+import { useDebounce } from "@/hooks/use-debounce";
 import { useToast } from "@/hooks/use-toast";
-import { useCombobox } from "downshift";
-import { Search, Upload, X } from "lucide-react";
+import { Search } from "lucide-react";
 import Image from "next/image";
-import { useActionState, useCallback, useEffect, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import {
   Select,
@@ -25,55 +23,27 @@ import {
   SelectValue,
 } from "./ui/select";
 
+interface Game {
+  id: string;
+  name: string;
+  cover_image: string;
+  genres: { name: string }[];
+}
+
 export default function AddGameForm() {
-  // const [state, formAction] = useActionState(addGame, null);
   const [formResult, formAction] = useActionState(addGame, undefined);
   const [boughtStatus, setBoughtStatus] = useState("wanted");
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [platforms, setPlatforms] = useState<SelectPlatform[]>([]);
   const [collections, setCollections] = useState<SelectCollection[]>([]);
-  const [games, setGames] = useState<SelectGame[]>([]);
   const [selectedPlatform, setSelectedPlatform] = useState("");
   const [selectedCollection, setSelectedCollection] = useState("");
-  const [selectedGame, setSelectedGame] = useState<SelectGame | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState<Partial<Game>[]>([]);
+  const [selectedGame, setSelectedGame] = useState<Game | null>(null);
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const { toast } = useToast();
-
-  const debouncedSearch = useCallback(
-    debounce((inputValue: string) => {
-      searchGames(inputValue).then(setGames);
-    }, 300),
-    []
-  );
-
-  const {
-    isOpen,
-    getMenuProps,
-    getInputProps,
-    highlightedIndex,
-    getItemProps,
-  } = useCombobox({
-    items: games,
-    onInputValueChange: ({ inputValue }) => {
-      if (!!selectedGame) {
-        setSelectedPlatform("");
-      }
-      setSelectedGame(null);
-      if (inputValue?.length > 2) {
-        debouncedSearch(inputValue);
-      }
-    },
-    onSelectedItemChange: ({ selectedItem }) => {
-      if (selectedItem) {
-        setSelectedPlatform(selectedItem.platformId);
-        setSelectedGame(selectedItem);
-      } else {
-        setSelectedGame(null);
-        setSelectedPlatform("");
-      }
-    },
-    itemToString: (game) => game?.title || "",
-  });
 
   useEffect(() => {
     async function fetchPlatforms() {
@@ -81,30 +51,91 @@ export default function AddGameForm() {
       setPlatforms(fetchedPlatforms);
     }
     async function fetchUserCollections() {
-      const fetchedColleciton = await getUserCollections();
-      setCollections(fetchedColleciton);
+      const fetchedCollection = await getUserCollections();
+      setCollections(fetchedCollection);
     }
     fetchPlatforms();
     fetchUserCollections();
   }, []);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+  useEffect(() => {
+    if (debouncedSearchTerm) {
+      fetchGames(debouncedSearchTerm);
+    } else {
+      setSearchResults([]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearchTerm]);
+
+  const fetchGames = async (term: string) => {
+    try {
+      const response = await fetch(
+        `/api/search-games?term=${encodeURIComponent(term)}`
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch games");
+      }
+      const data = await response.json();
+      setSearchResults(data.games);
+    } catch (error) {
+      console.error("Error fetching games:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch games. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const fetchGameDetails = async (id: string) => {
+    try {
+      const response = await fetch(`/api/search-games?id=${id}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch game details");
+      }
+      const game = await response.json();
+      setSelectedGame(game);
+    } catch (error) {
+      console.error("Error fetching game details:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch game details. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleGameSelect = async (game: Partial<Game>) => {
+    setSearchTerm(game.name || "");
+    setSearchResults([]);
+    await fetchGameDetails(game.id!);
+    if (searchInputRef.current) {
+      searchInputRef.current.blur();
     }
   };
 
   const handleSubmit = async (formData: FormData) => {
+    if (!selectedGame) {
+      toast({
+        title: "Error",
+        description: "Please select a game from the search results.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    formData.append("title", selectedGame.name);
+    formData.append("imageUrl", selectedGame.cover_image);
+    formData.append(
+      "genres",
+      JSON.stringify(selectedGame.genres.map((g) => g.name))
+    );
+
     await formAction(formData);
     if (formResult?.error) {
       toast({
         title: "Error",
-        description: formResult?.error.toString(),
+        description: formResult.error.toString(),
         variant: "destructive",
       });
     } else {
@@ -112,10 +143,10 @@ export default function AddGameForm() {
         title: "Success",
         description: "Game added to your collection!",
       });
-      setImagePreview(null);
+      setSelectedGame(null);
+      setSearchTerm("");
       setBoughtStatus("wanted");
       setSelectedPlatform("");
-      setSelectedGame(null);
     }
   };
 
@@ -157,35 +188,55 @@ export default function AddGameForm() {
             <div className="relative">
               <Search className="absolute top-2 left-2 " size={20} />
               <Input
-                {...getInputProps({
-                  name: "title",
-                  required: true,
-                  className: " rounded-lg pl-10 ",
-                })}
+                ref={searchInputRef}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search for a game..."
+                className="pl-10"
               />
-              <ul
-                {...getMenuProps()}
-                className={`${
-                  isOpen && games.length > 0 ? "" : "hidden"
-                } absolute z-10 w-full bg-white dark:bg-gray-700 mt-1 shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm transition-all duration-300 ease-in-out`}
-              >
-                {isOpen &&
-                  games.map((game, index) => (
-                    <li
-                      key={game.id}
-                      {...getItemProps({ item: game, index })}
-                      className={`${
-                        highlightedIndex === index
-                          ? "bg-gray-100 dark:bg-gray-600"
-                          : ""
-                      } cursor-default select-none relative py-2 pl-3 pr-9 transition-colors duration-200`}
-                    >
-                      {game.title}
-                    </li>
-                  ))}
-              </ul>
             </div>
+            {searchResults.length > 0 && (
+              <ul className="mt-2 border rounded-md shadow-sm max-h-60 overflow-y-auto">
+                {searchResults.map((game) => (
+                  <li
+                    key={game.id}
+                    className="p-2 hover:bg-gray-100 cursor-pointer"
+                    onClick={() => handleGameSelect(game)}
+                  >
+                    {game.name}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
+
+          {selectedGame && (
+            <>
+              <div className="space-y-2">
+                <Label className="text-md font-semibold">Game Image</Label>
+                <Image
+                  src={selectedGame.cover_image || "/placeholder.svg"}
+                  alt={selectedGame.name}
+                  width={200}
+                  height={300}
+                  className="rounded-md object-cover mx-auto"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-md font-semibold">Genres</Label>
+                <div className="flex flex-wrap gap-2">
+                  {selectedGame.genres.map((genre, index) => (
+                    <span
+                      key={index}
+                      className="bg-primary text-primary-foreground px-2 py-1 rounded-full text-sm"
+                    >
+                      {genre.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="platform" className="text-md font-semibold">
@@ -196,7 +247,6 @@ export default function AddGameForm() {
               required
               value={selectedPlatform}
               onValueChange={setSelectedPlatform}
-              disabled={!!selectedGame}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select platform" />
@@ -232,59 +282,6 @@ export default function AddGameForm() {
             </RadioGroup>
           </div>
 
-          <div className="space-y-2 transform ">
-            <Label htmlFor="image" className="text-md font-semibold">
-              Game Image
-            </Label>
-            <Input
-              id="image"
-              name="image"
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              required
-              className="hidden"
-            />
-            <div className="flex items-center justify-center w-full">
-              {imagePreview ? (
-                <div className="mt-2 relative">
-                  <Image
-                    src={imagePreview}
-                    alt="Game preview"
-                    width={200}
-                    height={200}
-                    className="rounded-md object-cover mx-auto"
-                  />
-                  <Button
-                    size="icon"
-                    variant="destructive"
-                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
-                    onClick={() => setImagePreview(null)}
-                    aria-label="Delete image"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ) : (
-                <label
-                  htmlFor="image"
-                  className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer  dark:hover:bg-bray-800  hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600 transition-all"
-                >
-                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    <Upload className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" />
-                    <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                      <span className="font-semibold">Click to upload</span> or
-                      drag and drop
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      PNG, JPG or GIF (MAX. 800x400px)
-                    </p>
-                  </div>
-                </label>
-              )}
-            </div>
-          </div>
-
           {boughtStatus === "owned" && (
             <div className="space-y-2">
               <Label className="text-md font-semibold" htmlFor="boughtDate">
@@ -294,7 +291,7 @@ export default function AddGameForm() {
             </div>
           )}
 
-          <Button type="submit" className="w-full">
+          <Button type="submit" className="w-full" disabled={!selectedGame}>
             Add Game
           </Button>
         </form>
