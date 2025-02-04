@@ -39,7 +39,7 @@ export function BarcodeScanner({ onGameFound }: BarcodeScannerProps) {
       );
 
       Quagga.onDetected((result) => {
-        if (result.codeResult.code) {
+        if (result.codeResult.code && result.codeResult.code.length >= 12) {
           console.log(result);
           onGameFound({ barcode: result.codeResult.code });
           setIsScanning(false);
