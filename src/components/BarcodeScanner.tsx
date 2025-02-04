@@ -26,7 +26,12 @@ export function BarcodeScanner({ onGameFound }: BarcodeScannerProps) {
             target: scannerRef.current!,
           },
           decoder: {
-            readers: ["ean_reader", "upc_reader"],
+            readers: [
+              "ean_reader",
+              "upc_reader",
+              "upc_e_reader",
+              "ean_8_reader",
+            ],
           },
         },
         (err) => {
