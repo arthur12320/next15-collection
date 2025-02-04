@@ -1,7 +1,6 @@
 "use server";
-
 import db from "@/db";
-import { unstable_cacheLife as cacheLife } from "next/cache";
+import { cacheLife } from "next/dist/server/use-cache/cache-life";
 
 export const getPlatforms = async () => {
     "use cache";
