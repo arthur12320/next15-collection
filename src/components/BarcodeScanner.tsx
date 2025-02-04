@@ -26,12 +26,7 @@ export function BarcodeScanner({ onGameFound }: BarcodeScannerProps) {
             target: scannerRef.current!,
           },
           decoder: {
-            readers: [
-              "ean_reader",
-              "ean_8_reader",
-              "upc_reader",
-              "upc_e_reader",
-            ],
+            readers: ["ean_reader", "upc_reader"],
           },
         },
         (err) => {
@@ -45,6 +40,7 @@ export function BarcodeScanner({ onGameFound }: BarcodeScannerProps) {
 
       Quagga.onDetected((result) => {
         if (result.codeResult.code) {
+          console.log(result);
           onGameFound({ barcode: result.codeResult.code });
           setIsScanning(false);
         }
