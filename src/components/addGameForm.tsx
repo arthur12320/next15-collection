@@ -11,9 +11,12 @@ import type { SelectCollection } from "@/db/schema/collections";
 import type { SelectPlatform } from "@/db/schema/platforms";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useToast } from "@/hooks/use-toast";
+import { DialogTitle } from "@radix-ui/react-dialog";
 import { Search } from "lucide-react";
 import Image from "next/image";
 import { useActionState, useEffect, useRef, useState } from "react";
+import { BarcodeScanner } from "./BarcodeScanner";
+import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import {
   Select,
@@ -150,6 +153,31 @@ export default function AddGameForm() {
     }
   };
 
+  const handleGameFound = async (gameInfo: { barcode: string }) => {
+    try {
+      const response = await fetch(
+        `/api/search-games?barcode=${gameInfo.barcode}`
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch game details");
+      }
+      const game = await response.json();
+      if (game.error) {
+        throw new Error(game.error);
+      }
+      setSelectedGame(game);
+      setSearchTerm(game.name);
+    } catch (error) {
+      console.error("Error fetching game details:", error);
+      toast({
+        title: "Error",
+        description:
+          "Failed to fetch game details. Please try again or search manually.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
@@ -158,6 +186,17 @@ export default function AddGameForm() {
         </CardTitle>
       </CardHeader>
       <CardContent>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button type="button" variant="outline" className="mb-4">
+              Scan Game Barcode
+            </Button>
+          </DialogTrigger>
+          <DialogTitle>Qr code Scanner</DialogTitle>
+          <DialogContent>
+            <BarcodeScanner onGameFound={handleGameFound} />
+          </DialogContent>
+        </Dialog>
         <form action={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="collection" className="text-md font-semibold">
