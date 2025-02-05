@@ -1,3 +1,4 @@
+"use client";
 import { BarcodeScanner } from "@/components/BarcodeScanner";
 import { Button } from "@/components/ui/button";
 import {
