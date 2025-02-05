@@ -47,11 +47,16 @@ async function searchIGDBWithFlexibleTitle(
   // Split the title into words
   const titleWords = cleanTitle.split(/\s+/);
 
-  for (let i = titleWords.length; i > 0; i--) {
-    const searchWords = titleWords.slice(0, i);
-    const searchQuery = searchWords
-      .map((word) => `name ~ *"${word}"*`)
-      .join(" & ");
+  for (let i = titleWords.length + 1; i > 0; i--) {
+    let searchQuery;
+    if (i > titleWords.length) {
+      searchQuery = [cleanTitle]
+        .map((word) => `name ~ *"${word}"*`)
+        .join(" & ");
+    } else {
+      const searchWords = titleWords.slice(0, i);
+      searchQuery = searchWords.map((word) => `name ~ *"${word}"*`).join(" & ");
+    }
 
     console.log(`Trying search query: ${searchQuery}`);
 
@@ -63,7 +68,7 @@ async function searchIGDBWithFlexibleTitle(
         Accept: "application/json",
         "Content-Type": "application/json",
       },
-      body: `where ${searchQuery} & category = 0; fields name,cover.url,genres.name; limit 10;`,
+      body: `where ${searchQuery} & (category = 0 | category = 8 | category = 9 | category = 4| category = 3); fields name,cover.url,genres.name; limit 10;`,
     });
 
     if (!response.ok) {
