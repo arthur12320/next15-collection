@@ -3,13 +3,19 @@
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useZxing } from "react-zxing";
+import { Input } from "./ui/input";
 
 interface BarcodeScannerProps {
   onGameFound: (gameInfo: { barcode: string }) => void;
+  testing?: boolean;
 }
 
-export function BarcodeScanner({ onGameFound }: BarcodeScannerProps) {
+export function BarcodeScanner({
+  onGameFound,
+  testing = false,
+}: BarcodeScannerProps) {
   const [isScanning, setIsScanning] = useState(false);
+  const [testBarcode, setTestBarcode] = useState("");
 
   const { ref } = useZxing({
     onDecodeResult(result) {
@@ -27,9 +33,24 @@ export function BarcodeScanner({ onGameFound }: BarcodeScannerProps) {
       <Button onClick={() => setIsScanning(!isScanning)}>
         {isScanning ? "Stop Scanning" : "Start Scanning"}
       </Button>
-      <div className={`w-full max-w-sm ${isScanning ? "block" : "hidden"}`}>
-        <video ref={ref} className="w-full" />
-      </div>
+      {!testing ? (
+        <div className={`w-full max-w-sm ${isScanning ? "block" : "hidden"}`}>
+          <video ref={ref} className="w-full" />
+        </div>
+      ) : (
+        <div className={`w-full max-w-sm ${isScanning ? "block" : "hidden"}`}>
+          <Input
+            value={testBarcode}
+            onChange={(e) => setTestBarcode(e.target.value)}
+            placeholder="Search for a barcode"
+            className="pl-10"
+          />
+          <Button onClick={() => onGameFound({ barcode: testBarcode })}>
+            ok
+          </Button>
+        </div>
+      )}
+
       {isScanning && (
         <p className="text-sm text-gray-500">
           Position the barcode within the camera view. Supported formats: UPC-A,
