@@ -204,7 +204,7 @@ export default function AddGameForm() {
           </DialogTrigger>
           <DialogTitle>Qr code Scanner</DialogTitle>
           <DialogContent>
-            <BarcodeScanner testing onGameFound={handleGameFound} />
+            <BarcodeScanner onGameFound={handleGameFound} />
           </DialogContent>
         </Dialog>
         <form action={handleSubmit} className="space-y-6">
