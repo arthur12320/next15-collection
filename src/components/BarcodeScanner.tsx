@@ -7,10 +7,13 @@ import { Input } from "./ui/input";
 
 interface BarcodeScannerProps {
   onGameFound: (gameInfo: { barcode: string }) => void;
-  testing: boolean;
+  testing?: boolean;
 }
 
-export function BarcodeScanner({ onGameFound, testing }: BarcodeScannerProps) {
+export function BarcodeScanner({
+  onGameFound,
+  testing = false,
+}: BarcodeScannerProps) {
   const [isScanning, setIsScanning] = useState(false);
   const [testBarcode, setTestBarcode] = useState("");
 
