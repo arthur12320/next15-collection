@@ -34,61 +34,112 @@ async function getIGDBAccessToken() {
   return igdbAccessToken;
 }
 
+async function searchIGDBWithFlexibleTitle(
+  title: string,
+  igdbAccessToken: string
+) {
+  // Remove common prefixes like "Nintendo" and special characters
+  const cleanTitle = title
+    .replace(/^(Nintendo|Sony|Microsoft)\s+/i, "")
+    .replace(/[:\-–]/g, " ")
+    .trim();
+
+  // Split the title into words
+  const titleWords = cleanTitle.split(/\s+/);
+
+  // Create a search query that looks for games containing most of the words
+  const searchQuery = titleWords
+    .map((word) => `name ~ *"${word}"*`)
+    .join(" & ");
+
+  console.log(searchQuery);
+
+  const response = await fetch(`${IGDB_API_URL}/games`, {
+    method: "POST",
+    headers: {
+      "Client-ID": IGDB_CLIENT_ID,
+      Authorization: `Bearer ${igdbAccessToken}`,
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: `where ${searchQuery}; fields name,cover.url,genres.name; limit 10;`,
+  });
+
+  if (!response.ok) {
+    throw new Error(`IGDB API responded with status: ${response.status}`);
+  }
+
+  return await response.json();
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const term = searchParams.get("term");
   const gameId = searchParams.get("id");
   const barcode = searchParams.get("barcode");
 
-  if (barcode) {
-    try {
-      const response = await fetch(
+  if (!IGDB_CLIENT_ID || !IGDB_CLIENT_SECRET) {
+    return NextResponse.json(
+      { error: "API keys are not configured" },
+      { status: 500 }
+    );
+  }
+
+  try {
+    const igdbAccessToken = await getIGDBAccessToken();
+
+    if (barcode) {
+      const upcResponse = await fetch(
         `https://api.upcitemdb.com/prod/trial/lookup?upc=${barcode}`
       );
-      const data = await response.json();
+      const upcData = await upcResponse.json();
 
-      if (data.code !== "OK") {
-        return NextResponse.json(
-          { error: "Failed to fetch game information" },
-          { status: 400 }
-        );
-      }
-
-      if (data.total === 0 || !data.items || data.items.length === 0) {
+      if (
+        upcData.code !== "OK" ||
+        upcData.total === 0 ||
+        !upcData.items ||
+        upcData.items.length === 0
+      ) {
         return NextResponse.json(
           { error: "No game found for this barcode" },
           { status: 404 }
         );
       }
 
-      const item = data.items[0];
-      return NextResponse.json({
-        id: item.upc, // Using UPC as ID since we don't have a specific game ID
-        name: item.title,
-        cover_image:
-          item.images && item.images.length > 0 ? item.images[0] : null,
-        genres: [], // UPC database doesn't provide genre information
-        description: item.description || "",
-        brand: item.brand,
-        lowestPrice: item.lowest_recorded_price,
-        highestPrice: item.highest_recorded_price,
-      });
-    } catch (error) {
-      console.error("Error fetching game info from UPC database:", error);
-      return NextResponse.json(
-        { error: "Failed to fetch game information" },
-        { status: 500 }
+      const upcItem = upcData.items[0];
+
+      // Use the title from UPC database to search IGDB
+      const igdbGames = await searchIGDBWithFlexibleTitle(
+        upcItem.title,
+        igdbAccessToken
       );
-    }
-  } else if (!IGDB_CLIENT_ID || !IGDB_CLIENT_SECRET) {
-    return NextResponse.json(
-      { error: "API keys are not configured" },
-      { status: 500 }
-    );
-  } else if (gameId) {
-    // Fetch specific game details
-    try {
-      const igdbAccessToken = await getIGDBAccessToken();
+
+      if (igdbGames.length > 0) {
+        const game = igdbGames[0]; // Use the first match
+        const games = await searchIGDBWithFlexibleTitle(
+          game.title,
+          igdbAccessToken
+        );
+        return NextResponse.json({
+          games: games.map(
+            (game: { id: string; name: string; cover: { url: string } }) => ({
+              id: game.id,
+              name: game.name,
+              cover_image: game.cover
+                ? `https:${game.cover.url.replace("t_thumb", "t_cover_small")}`
+                : null,
+            })
+          ),
+        });
+      } else {
+        // If no match in IGDB, return UPC data
+        console.log("searching the long way");
+        return NextResponse.json(
+          { error: "Failed to fetch games" },
+          { status: 500 }
+        );
+      }
+    } else if (gameId) {
       const response = await fetch(`${IGDB_API_URL}/games`, {
         method: "POST",
         headers: {
@@ -113,33 +164,8 @@ export async function GET(request: NextRequest) {
           : null,
         genres: game.genres || [],
       });
-    } catch (error) {
-      console.error("Error fetching games:", error);
-      return NextResponse.json(
-        { error: "Failed to fetch games" },
-        { status: 500 }
-      );
-    }
-  } else if (term) {
-    // Search for games
-    try {
-      const igdbAccessToken = await getIGDBAccessToken();
-      const response = await fetch(`${IGDB_API_URL}/games`, {
-        method: "POST",
-        headers: {
-          "Client-ID": IGDB_CLIENT_ID,
-          Authorization: `Bearer ${igdbAccessToken}`,
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: `search "${term}"; fields name,cover.url; limit 10;`,
-      });
-
-      if (!response.ok) {
-        throw new Error(`IGDB API responded with status: ${response.status}`);
-      }
-
-      const games = await response.json();
+    } else if (term) {
+      const games = await searchIGDBWithFlexibleTitle(term, igdbAccessToken);
       return NextResponse.json({
         games: games.map(
           (game: { id: string; name: string; cover: { url: string } }) => ({
@@ -151,17 +177,17 @@ export async function GET(request: NextRequest) {
           })
         ),
       });
-    } catch (error) {
-      console.error("Error fetching games:", error);
+    } else {
       return NextResponse.json(
-        { error: "Failed to fetch games" },
-        { status: 500 }
+        { error: "Search term, game ID, or barcode is required" },
+        { status: 400 }
       );
     }
-  } else {
+  } catch (error) {
+    console.error("Error fetching games:", error);
     return NextResponse.json(
-      { error: "Search term, game ID, or barcode is required" },
-      { status: 400 }
+      { error: "Failed to fetch games" },
+      { status: 500 }
     );
   }
 }
