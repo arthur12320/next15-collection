@@ -47,29 +47,36 @@ async function searchIGDBWithFlexibleTitle(
   // Split the title into words
   const titleWords = cleanTitle.split(/\s+/);
 
-  // Create a search query that looks for games containing most of the words
-  const searchQuery = titleWords
-    .map((word) => `name ~ *"${word}"*`)
-    .join(" & ");
+  for (let i = titleWords.length; i > 0; i--) {
+    const searchWords = titleWords.slice(0, i);
+    const searchQuery = searchWords
+      .map((word) => `name ~ *"${word}"*`)
+      .join(" & ");
 
-  console.log(searchQuery);
+    console.log(`Trying search query: ${searchQuery}`);
 
-  const response = await fetch(`${IGDB_API_URL}/games`, {
-    method: "POST",
-    headers: {
-      "Client-ID": IGDB_CLIENT_ID,
-      Authorization: `Bearer ${igdbAccessToken}`,
-      Accept: "application/json",
-      "Content-Type": "application/json",
-    },
-    body: `where ${searchQuery}; fields name,cover.url,genres.name; limit 10;`,
-  });
+    const response = await fetch(`${IGDB_API_URL}/games`, {
+      method: "POST",
+      headers: {
+        "Client-ID": IGDB_CLIENT_ID,
+        Authorization: `Bearer ${igdbAccessToken}`,
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: `where ${searchQuery}; fields name,cover.url,genres.name; limit 10;`,
+    });
 
-  if (!response.ok) {
-    throw new Error(`IGDB API responded with status: ${response.status}`);
+    if (!response.ok) {
+      throw new Error(`IGDB API responded with status: ${response.status}`);
+    }
+
+    const games = await response.json();
+    if (games.length > 0) {
+      return games;
+    }
   }
 
-  return await response.json();
+  return []; // Return empty array if no matches found
 }
 
 export async function GET(request: NextRequest) {
@@ -115,13 +122,8 @@ export async function GET(request: NextRequest) {
       );
 
       if (igdbGames.length > 0) {
-        const game = igdbGames[0]; // Use the first match
-        const games = await searchIGDBWithFlexibleTitle(
-          game.title,
-          igdbAccessToken
-        );
         return NextResponse.json({
-          games: games.map(
+          games: igdbGames.map(
             (game: { id: string; name: string; cover: { url: string } }) => ({
               id: game.id,
               name: game.name,
@@ -133,11 +135,19 @@ export async function GET(request: NextRequest) {
         });
       } else {
         // If no match in IGDB, return UPC data
-        console.log("searching the long way");
-        return NextResponse.json(
-          { error: "Failed to fetch games" },
-          { status: 500 }
-        );
+        console.log("No matches found in IGDB");
+        return NextResponse.json({
+          games: [
+            {
+              id: upcItem.upc,
+              name: upcItem.title,
+              cover_image:
+                upcItem.images && upcItem.images.length > 0
+                  ? upcItem.images[0]
+                  : null,
+            },
+          ],
+        });
       }
     } else if (gameId) {
       const response = await fetch(`${IGDB_API_URL}/games`, {
