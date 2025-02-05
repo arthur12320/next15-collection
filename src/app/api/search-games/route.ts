@@ -63,7 +63,7 @@ async function searchIGDBWithFlexibleTitle(
         Accept: "application/json",
         "Content-Type": "application/json",
       },
-      body: `where ${searchQuery}; fields name,cover.url,genres.name; limit 10;`,
+      body: `where ${searchQuery} & category = 0; fields name,cover.url,genres.name; limit 10;`,
     });
 
     if (!response.ok) {
