@@ -1,38 +1,60 @@
-import { deleteGame } from "@/app/actions/gameActions";
-import { Button } from "@/components/ui/button";
+"use client";
 import { Card } from "@/components/ui/card";
-import type { SelectCollectionWithUserAndGameEntries } from "@/db/schema/collections";
-import { getCollection } from "@/lib/queries";
-import { Trash2 } from "lucide-react";
-import { revalidatePath } from "next/cache";
+import { Input } from "@/components/ui/input";
+import type { SelectGameEntry } from "@/db/schema/gameEntry";
+import { getGameEntriesByCollection } from "@/lib/queries";
 import Image from "next/image";
+import { useParams } from "next/navigation";
+import { useEffect, useState, useTransition } from "react";
 
-export default async function CollectionPage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const { id } = await params;
-  const collection = (await getCollection(
-    id
-  )) as SelectCollectionWithUserAndGameEntries;
+export default function CollectionPage() {
+  const params = useParams();
+  const id = params.id as string;
 
-  async function handleDeleteGame(gameId: string) {
-    "use server";
-    await deleteGame(gameId);
-    revalidatePath(`/collections/${id}`);
-  }
+  const [search, setSearch] = useState<string>("");
+  const [games, setGames] = useState<SelectGameEntry[]>([]);
+  const [collectionName, setCollectionName] = useState<string>("");
+  const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    async function fetchInitialData() {
+      const initialData = await getGameEntriesByCollection(id[0], "");
+      setGames(initialData.games);
+      setCollectionName(initialData.collectionName);
+    }
+
+    fetchInitialData();
+  }, [id]);
+
+  const handleSearch = (value: string) => {
+    setSearch(value);
+
+    startTransition(async () => {
+      const result = await getGameEntriesByCollection(id[0], value);
+      setGames(result.games);
+    });
+  };
 
   return (
     <Card className="mx-auto max-w-7xl mt-10 p-6">
-      <h1 className="text-center text-5xl mt-5 mb-8">{collection?.name}</h1>
+      <h1 className="text-center text-5xl mt-5 mb-8">{collectionName}</h1>
       <p className="text-center text-xl mb-6">
-        Number of games: {collection?.games?.length}
+        Number of games: {games.length}
       </p>
+      <div className="space-y-4">
+        <Input
+          type="search"
+          placeholder="Search games..."
+          value={search}
+          onChange={(e) => handleSearch(e.target.value)}
+          className="w-full"
+        />
+      </div>
 
-      {collection?.games && collection.games.length > 0 ? (
+      {isPending && <p>Loading...</p>}
+      {games && games.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {collection.games.map((game) => (
+          {games.map((game) => (
             <Card key={game.id} className="overflow-hidden">
               <div className="relative aspect-[3/4] w-full">
                 <Image
@@ -52,17 +74,6 @@ export default async function CollectionPage({
                   >
                     {game.bought ? "Owned" : "Wanted"}
                   </span>
-                  <form action={handleDeleteGame.bind(null, game.id)}>
-                    <Button
-                      type="submit"
-                      variant="destructive"
-                      size="icon"
-                      className="h-8 w-8"
-                      aria-label={`Delete ${game.title}`}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </form>
                 </div>
               </div>
             </Card>
