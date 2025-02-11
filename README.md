@@ -42,5 +42,7 @@ TODO:
 ## Features TODO
 
 - [ ] Better pagination
-- [ ] add rest of filters
+- [x] add initial filters
+- [ ] add all other filters
 - [ ] add stuff to make PWA work better
+- [ ] add edit functionality

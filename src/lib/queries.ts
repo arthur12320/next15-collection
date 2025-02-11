@@ -67,7 +67,8 @@ export const getGameEntriesByCollection = async (
   collectionId: string,
   query: string,
   page = 1,
-  pageSize = 12
+  pageSize = 12,
+  filters: { wanted?: boolean; bought?: boolean; platform?: string }
 ) => {
   const session = await auth();
 
@@ -83,32 +84,15 @@ export const getGameEntriesByCollection = async (
   const searchQuery = `%${query}%`;
   const offset = (page - 1) * pageSize;
 
-  // const collection = await db.query.collections.findFirst({
-  //   where: (collections, { eq }) =>
-  //     and(
-  //       eq(collections.id, collectionId),
-  //       eq(collections.userId, session.user.id as string)
-  //     ),
-  //   columns: {
-  //     name: true,
-  //   },
-  // });
-
-  // if (!collection)
-  //   return {
-  //     games: [],
-  //     collectionName: "",
-  //     totalCount: 0,
-  //     currentPage: 1,
-  //     totalPages: 1,
-  //   };
-
   const gamesQuery = db.query.gameEntry.findMany({
     where: (gameEntry, { eq, and, ilike }) =>
       and(
         eq(gameEntry.collectionId, collectionId),
         eq(gameEntry.userId, session.user.id as string),
-        ilike(gameEntry.title, searchQuery)
+        ilike(gameEntry.title, searchQuery),
+        ...(filters.wanted ? [eq(gameEntry.bought, false)] : []),
+        ...(filters.bought ? [eq(gameEntry.bought, true)] : []),
+        ...(filters.platform ? [eq(gameEntry.platformId, filters.platform)] : [])
       ),
     limit: pageSize,
     offset: offset,
@@ -121,7 +105,10 @@ export const getGameEntriesByCollection = async (
       and(
         eq(gameEntry.collectionId, collectionId),
         eq(gameEntry.userId, session.user.id as string),
-        ilike(gameEntry.title, searchQuery)
+        ilike(gameEntry.title, searchQuery),
+        ...(filters.wanted ? [eq(gameEntry.bought, false)] : []),
+        ...(filters.bought ? [eq(gameEntry.bought, true)] : []),
+        ...(filters.platform ? [eq(gameEntry.platformId, filters.platform)] : [])
       )
     );
 
