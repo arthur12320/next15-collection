@@ -92,7 +92,6 @@ export const getGameEntriesByCollection = async (
         eq(gameEntry.userId, session.user.id as string),
         ilike(gameEntry.title, searchQuery)
       ),
-    limit: 20,
   });
 
   return { games, collectionName: collection.name };
