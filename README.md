@@ -38,3 +38,9 @@ TODO:
     - [ ] add form validation !
   - [ ] login
   - [ ] register
+
+## Features TODO
+
+- [ ] Better pagination
+- [ ] add rest of filters
+- [ ] add stuff to make PWA work better

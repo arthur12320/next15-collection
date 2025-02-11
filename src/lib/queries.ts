@@ -1,6 +1,7 @@
 "use server";
 import db from "@/db";
-import { and } from "drizzle-orm";
+import { gameEntry } from "@/db/schema";
+import { and, count, eq, ilike } from "drizzle-orm";
 import { auth } from "../../auth";
 
 export const getCollections = async () => {
@@ -64,35 +65,78 @@ export const getGame = async (id: string) => {
 
 export const getGameEntriesByCollection = async (
   collectionId: string,
-  query: string
+  query: string,
+  page = 1,
+  pageSize = 12
 ) => {
   const session = await auth();
 
-  if (!session?.user) return { games: [], collectionName: "" };
+  if (!session?.user)
+    return {
+      games: [],
+      collectionName: "",
+      totalCount: 0,
+      currentPage: 1,
+      totalPages: 1,
+    };
 
   const searchQuery = `%${query}%`;
+  const offset = (page - 1) * pageSize;
 
-  const collection = await db.query.collections.findFirst({
-    where: (collections, { eq }) =>
-      and(
-        eq(collections.id, collectionId),
-        eq(collections.userId, session.user.id as string)
-      ),
-    columns: {
-      name: true,
-    },
-  });
+  // const collection = await db.query.collections.findFirst({
+  //   where: (collections, { eq }) =>
+  //     and(
+  //       eq(collections.id, collectionId),
+  //       eq(collections.userId, session.user.id as string)
+  //     ),
+  //   columns: {
+  //     name: true,
+  //   },
+  // });
 
-  if (!collection) return { games: [], collectionName: "" };
+  // if (!collection)
+  //   return {
+  //     games: [],
+  //     collectionName: "",
+  //     totalCount: 0,
+  //     currentPage: 1,
+  //     totalPages: 1,
+  //   };
 
-  const games = await db.query.gameEntry.findMany({
+  const gamesQuery = db.query.gameEntry.findMany({
     where: (gameEntry, { eq, and, ilike }) =>
       and(
         eq(gameEntry.collectionId, collectionId),
         eq(gameEntry.userId, session.user.id as string),
         ilike(gameEntry.title, searchQuery)
       ),
+    limit: pageSize,
+    offset: offset,
   });
 
-  return { games, collectionName: collection.name };
+  const totalCountQuery = db
+    .select({ count: count() })
+    .from(gameEntry)
+    .where(
+      and(
+        eq(gameEntry.collectionId, collectionId),
+        eq(gameEntry.userId, session.user.id as string),
+        ilike(gameEntry.title, searchQuery)
+      )
+    );
+
+  const [games, [{ count: totalCount }]] = await Promise.all([
+    gamesQuery,
+    totalCountQuery,
+  ]);
+
+  const totalPages = Math.ceil(totalCount / pageSize);
+
+  return {
+    games,
+    collectionName: "teste",
+    totalCount,
+    currentPage: page,
+    totalPages,
+  };
 };
