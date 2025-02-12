@@ -1,10 +1,12 @@
 "use client";
+import { deleteGame } from "@/app/actions/gameActions";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { SelectGameEntry } from "@/db/schema/gameEntry";
 import { getGameEntriesByCollection, getPlatforms } from "@/lib/queries";
+import { Trash2 } from "lucide-react";
 
 import Image from "next/image";
 import { useParams } from "next/navigation";
@@ -60,6 +62,11 @@ export default function CollectionPage() {
 
   const handlePageChange = (newPage: number) => {
     startTransition(() => fetchData(newPage, search));
+  };
+
+  const handleDelete = (gameId: string) => {
+    deleteGame(gameId);
+    fetchData(currentPage, search);
   };
 
   return (
@@ -125,7 +132,16 @@ export default function CollectionPage() {
                       >
                         {game.bought ? "Owned" : "Wanted"}
                       </span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDelete(game.id)}
+                        disabled={false}
+                      >
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </Button>
                     </div>
+
                   </div>
                 </Card>
               ))}
