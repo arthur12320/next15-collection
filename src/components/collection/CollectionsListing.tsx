@@ -46,7 +46,7 @@ export default function CollectionListing({
         <CreateCollectionForm
           action={async (formData) => {
             const content = {
-              id: "000001",
+              id: "loading",
               name: formData.get("name") as string,
               userId: "000001",
               user: {
