@@ -33,13 +33,13 @@ interface Game {
   genres: { name: string }[];
 }
 
-export default function AddGameForm() {
+export default function AddGameForm({ collectionId, onGameAdded }: { collectionId?: string, onGameAdded?: () => void }) {
   const [formResult, formAction] = useActionState(addGame, undefined);
   const [boughtStatus, setBoughtStatus] = useState("wanted");
   const [platforms, setPlatforms] = useState<SelectPlatform[]>([]);
   const [collections, setCollections] = useState<SelectCollection[]>([]);
   const [selectedPlatform, setSelectedPlatform] = useState("");
-  const [selectedCollection, setSelectedCollection] = useState("");
+  const [selectedCollection, setSelectedCollection] = useState(collectionId || "");
   const [searchTerm, setSearchTerm] = useState("");
   const [showScanDialog, setShowScanDialog] = useState(false);
   const [searchResults, setSearchResults] = useState<Partial<Game>[]>([]);
@@ -151,6 +151,9 @@ export default function AddGameForm() {
       setSearchTerm("");
       setBoughtStatus("wanted");
       setSelectedPlatform("");
+      if (onGameAdded) {
+        onGameAdded();
+      }
     }
   };
 

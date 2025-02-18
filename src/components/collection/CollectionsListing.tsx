@@ -6,7 +6,6 @@ import {
 } from "@/db/schema/collections";
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
-import { User } from "next-auth";
 import { useActionState, useOptimistic } from "react";
 import { CardContent, CardFooter } from "../ui/card";
 import CreateCollectionForm from "./CreateCollectionForm";
@@ -14,10 +13,8 @@ import CollectionCard from "./collectionCard";
 
 export default function CollectionListing({
   collections,
-  user,
 }: {
   collections: SelectCollectionWithUser[];
-  user: User | undefined;
 }) {
   const [lastResult, action] = useActionState(createCollection, undefined);
   const [form, fields] = useForm({
@@ -49,14 +46,14 @@ export default function CollectionListing({
         <CreateCollectionForm
           action={async (formData) => {
             const content = {
-              id: "000001",
+              id: "loading",
               name: formData.get("name") as string,
               userId: "000001",
               user: {
-                image: user?.image || "",
-                name: user?.name || "",
+                image: collections[0] ? collections[0].user.image : "",
+                name: collections[0] ? collections[0].user.name : "",
                 id: "000001",
-                email: user?.email || "",
+                email: collections[0] ? collections[0].user.email : "",
                 emailVerified: null,
               },
               createdAt: new Date(),
