@@ -1,12 +1,15 @@
 "use client";
 import { deleteGame } from "@/app/actions/gameActions";
+import AddGameForm from "@/components/addGameForm";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { SelectGameEntry } from "@/db/schema/gameEntry";
 import { getGameEntriesByCollection, getPlatforms } from "@/lib/queries";
-import { Trash2 } from "lucide-react";
+import { DialogTitle } from "@radix-ui/react-dialog";
+import { Plus, Trash2 } from "lucide-react";
 
 import Image from "next/image";
 import { useParams } from "next/navigation";
@@ -14,7 +17,7 @@ import { useEffect, useState, useTransition } from "react";
 
 export default function CollectionPage() {
   const params = useParams();
-  const id = params?.id[0] as string;
+  const id = params.id ? params?.id[0] as string : "";
 
   const [search, setSearch] = useState<string>("");
   const [games, setGames] = useState<SelectGameEntry[]>([]);
@@ -26,7 +29,13 @@ export default function CollectionPage() {
   const [status, setStatus] = useState<"all" | "wanted" | "bought">("all");
   const [platforms, setPlatforms] = useState<{ id: string; name: string | null; }[]>([]);
   const [selectedPlatform, setSelectedPlatform] = useState<string>("all");
+  const [isAddGameOpen, setIsAddGameOpen] = useState(false);
 
+  const handleGameAdded = () => {
+    setIsAddGameOpen(false);
+    fetchData(1, search);
+    // You might want to refresh the collection listing here
+  };
 
   const pageSize = 12; // Number of items per page
 
@@ -82,7 +91,7 @@ export default function CollectionPage() {
           className="w-full"
         />
         <div className="flex flex-wrap gap-4 mt-4">
-          <Select value={status} onValueChange={e => { setStatus(e); setSearch(""); }}>
+          <Select value={status} onValueChange={e => { setStatus(e as "bought" | "wanted" | "all"); setSearch(""); }}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
@@ -170,6 +179,17 @@ export default function CollectionPage() {
           </p>
         )
       }
+      <Dialog open={isAddGameOpen} onOpenChange={setIsAddGameOpen}>
+        <DialogTrigger asChild>
+          <Button className="fixed bottom-4 right-6 rounded-full w-16 h-16 shadow-lg" size="icon">
+            <Plus className="h-6 w-6" />
+          </Button>
+        </DialogTrigger>
+        <DialogTitle></DialogTitle>
+        <DialogContent className="sm:max-w-[700px]">
+          <AddGameForm collectionId={id} onGameAdded={handleGameAdded} />
+        </DialogContent>
+      </Dialog>
     </Card >
   );
 }
