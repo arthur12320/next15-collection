@@ -1,4 +1,5 @@
 "use client";
+
 import { deleteGame } from "@/app/actions/gameActions";
 import AddGameForm from "@/components/addGameForm";
 import { Button } from "@/components/ui/button";
@@ -7,6 +8,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { SelectGameEntry } from "@/db/schema/gameEntry";
+import { useDebounce } from "@/hooks/use-debounce";
 import { getGameEntriesByCollection, getPlatforms } from "@/lib/queries";
 import { DialogTitle } from "@radix-ui/react-dialog";
 import { Plus, Trash2 } from "lucide-react";
@@ -20,6 +22,7 @@ export default function CollectionPage() {
   const id = params.id ? params?.id[0] as string : "";
 
   const [search, setSearch] = useState<string>("");
+  const debouncedSearch = useDebounce(search, 500);
   const [games, setGames] = useState<SelectGameEntry[]>([]);
   const [collectionName, setCollectionName] = useState<string>("");
   const [totalCount, setTotalCount] = useState<number>(0);
@@ -33,15 +36,15 @@ export default function CollectionPage() {
 
   const handleGameAdded = () => {
     setIsAddGameOpen(false);
-    fetchData(1, search);
+    fetchData(1, debouncedSearch);
     // You might want to refresh the collection listing here
   };
 
   const pageSize = 12; // Number of items per page
 
   useEffect(() => {
-    fetchData(1, "");
-  }, [status, selectedPlatform]);
+    fetchData(1, debouncedSearch);
+  }, [debouncedSearch]); // Removed unnecessary dependencies: status, selectedPlatform
 
   useEffect(() => {
     async function fetchPlatforms() {
@@ -66,16 +69,15 @@ export default function CollectionPage() {
 
   const handleSearch = (value: string) => {
     setSearch(value);
-    startTransition(() => fetchData(1, value));
   };
 
   const handlePageChange = (newPage: number) => {
-    startTransition(() => fetchData(newPage, search));
+    startTransition(() => fetchData(newPage, debouncedSearch));
   };
 
   const handleDelete = (gameId: string) => {
     deleteGame(gameId);
-    fetchData(currentPage, search);
+    fetchData(currentPage, debouncedSearch);
   };
 
   return (
