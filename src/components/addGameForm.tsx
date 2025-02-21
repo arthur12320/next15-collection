@@ -33,13 +33,21 @@ interface Game {
   genres: { name: string }[];
 }
 
-export default function AddGameForm({ collectionId, onGameAdded }: { collectionId?: string, onGameAdded?: () => void }) {
+export default function AddGameForm({
+  collectionId,
+  onGameAdded,
+}: {
+  collectionId?: string;
+  onGameAdded?: () => void;
+}) {
   const [formResult, formAction] = useActionState(addGame, undefined);
   const [boughtStatus, setBoughtStatus] = useState("wanted");
   const [platforms, setPlatforms] = useState<SelectPlatform[]>([]);
   const [collections, setCollections] = useState<SelectCollection[]>([]);
   const [selectedPlatform, setSelectedPlatform] = useState("");
-  const [selectedCollection, setSelectedCollection] = useState(collectionId || "");
+  const [selectedCollection, setSelectedCollection] = useState(
+    collectionId || ""
+  );
   const [searchTerm, setSearchTerm] = useState("");
   const [showScanDialog, setShowScanDialog] = useState(false);
   const [searchResults, setSearchResults] = useState<Partial<Game>[]>([]);
@@ -186,167 +194,171 @@ export default function AddGameForm({ collectionId, onGameAdded }: { collectionI
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
+    <Card className="w-full max-w-2xl mx-auto h-[90vh] flex flex-col">
       <CardHeader>
         <CardTitle className="text-2xl font-bold text-center">
           Add Game to Collection
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <Dialog
-          open={showScanDialog}
-          onOpenChange={(e) => setShowScanDialog(e)}
-        >
-          <DialogTrigger
-            onClick={() => setShowScanDialog(!showScanDialog)}
-            asChild
+      <CardContent className="flex-grow overflow-hidden">
+        <div className="max-h-[80vh] overflow-y-auto pr-4 pb-4">
+          <Dialog
+            open={showScanDialog}
+            onOpenChange={(e) => setShowScanDialog(e)}
           >
-            <Button type="button" variant="outline" className="mb-4">
-              Scan Game Barcode
-            </Button>
-          </DialogTrigger>
-          <DialogTitle>Qr code Scanner</DialogTitle>
-          <DialogContent>
-            <BarcodeScanner onGameFound={handleGameFound} />
-          </DialogContent>
-        </Dialog>
-        <form action={handleSubmit} className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="collection" className="text-md font-semibold">
-              Collection
-            </Label>
-            <Select
-              name="collection"
-              required
-              value={selectedCollection}
-              onValueChange={setSelectedCollection}
+            <DialogTrigger
+              onClick={() => setShowScanDialog(!showScanDialog)}
+              asChild
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Select collection" />
-              </SelectTrigger>
-              <SelectContent>
-                {collections.map((collection) => (
-                  <SelectItem key={collection.id} value={collection.id}>
-                    {collection.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="title" className="text-md font-semibold">
-              Game Title
-            </Label>
-            <div className="relative">
-              <Search className="absolute top-2 left-2 " size={20} />
-              <Input
-                ref={searchInputRef}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search for a game..."
-                className="pl-10"
-              />
-            </div>
-            {searchResults.length > 0 && (
-              <ul className="mt-2 border rounded-md shadow-sm max-h-60 overflow-y-auto">
-                {searchResults.map((game) => (
-                  <li
-                    key={game.id}
-                    className="p-2 hover:bg-gray-100 cursor-pointer"
-                    onClick={() => handleGameSelect(game)}
-                  >
-                    {game.name}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+              <Button type="button" variant="outline" className="mb-4">
+                Scan Game Barcode
+              </Button>
+            </DialogTrigger>
+            <DialogTitle>Qr code Scanner</DialogTitle>
+            <DialogContent>
+              <BarcodeScanner onGameFound={handleGameFound} />
+            </DialogContent>
+          </Dialog>
 
-          {selectedGame && (
-            <>
-              <div className="space-y-2">
-                <Label className="text-md font-semibold">Game Image</Label>
-                <Image
-                  src={selectedGame.cover_image || "/placeholder.svg"}
-                  alt={selectedGame.name}
-                  width={200}
-                  height={300}
-                  className="rounded-md object-cover mx-auto"
+          <form action={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="collection" className="text-md font-semibold">
+                Collection
+              </Label>
+
+              <Select
+                name="collection"
+                required
+                value={selectedCollection}
+                onValueChange={setSelectedCollection}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select collection" />
+                </SelectTrigger>
+                <SelectContent>
+                  {collections.map((collection) => (
+                    <SelectItem key={collection.id} value={collection.id}>
+                      {collection.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="title" className="text-md font-semibold">
+                Game Title
+              </Label>
+              <div className="relative">
+                <Search className="absolute top-2 left-2 " size={20} />
+                <Input
+                  ref={searchInputRef}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search for a game..."
+                  className="pl-10"
                 />
               </div>
-              <div className="space-y-2">
-                <Label className="text-md font-semibold">Genres</Label>
-                <div className="flex flex-wrap gap-2">
-                  {selectedGame.genres.map((genre, index) => (
-                    <span
-                      key={index}
-                      className="bg-primary text-primary-foreground px-2 py-1 rounded-full text-sm"
+              {searchResults.length > 0 && (
+                <ul className="mt-2 border rounded-md shadow-sm max-h-60 overflow-y-auto">
+                  {searchResults.map((game) => (
+                    <li
+                      key={game.id}
+                      className="p-2 hover:bg-gray-100 cursor-pointer"
+                      onClick={() => handleGameSelect(game)}
                     >
-                      {genre.name}
-                    </span>
+                      {game.name}
+                    </li>
                   ))}
-                </div>
-              </div>
-            </>
-          )}
-
-          <div className="space-y-2">
-            <Label htmlFor="platform" className="text-md font-semibold">
-              Platform
-            </Label>
-            <Select
-              name="platform"
-              required
-              value={selectedPlatform}
-              onValueChange={setSelectedPlatform}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select platform" />
-              </SelectTrigger>
-              <SelectContent>
-                {platforms.map((platform) => (
-                  <SelectItem key={platform.id} value={platform.id}>
-                    {platform.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="boughtStatus" className="text-md font-semibold">
-              Bought Status
-            </Label>
-            <RadioGroup
-              name="boughtStatus"
-              value={boughtStatus}
-              onValueChange={setBoughtStatus}
-              className="flex space-x-4"
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="owned" id="owned" />
-                <Label htmlFor="owned">Owned</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="wanted" id="wanted" />
-                <Label htmlFor="wanted">Wanted</Label>
-              </div>
-            </RadioGroup>
-          </div>
-
-          {boughtStatus === "owned" && (
-            <div className="space-y-2">
-              <Label className="text-md font-semibold" htmlFor="boughtDate">
-                Bought Date
-              </Label>
-              <Input required id="boughtDate" name="boughtDate" type="date" />
+                </ul>
+              )}
             </div>
-          )}
 
-          <Button type="submit" className="w-full" disabled={!selectedGame}>
-            Add Game
-          </Button>
-        </form>
+            {selectedGame && (
+              <>
+                <div className="space-y-2">
+                  <Label className="text-md font-semibold">Game Image</Label>
+                  <Image
+                    src={selectedGame.cover_image || "/placeholder.svg"}
+                    alt={selectedGame.name}
+                    width={200}
+                    height={300}
+                    className="rounded-md object-cover mx-auto"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-md font-semibold">Genres</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedGame.genres.map((genre, index) => (
+                      <span
+                        key={index}
+                        className="bg-primary text-primary-foreground px-2 py-1 rounded-full text-sm"
+                      >
+                        {genre.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="platform" className="text-md font-semibold">
+                Platform
+              </Label>
+              <Select
+                name="platform"
+                required
+                value={selectedPlatform}
+                onValueChange={setSelectedPlatform}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select platform" />
+                </SelectTrigger>
+                <SelectContent>
+                  {platforms.map((platform) => (
+                    <SelectItem key={platform.id} value={platform.id}>
+                      {platform.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="boughtStatus" className="text-md font-semibold">
+                Bought Status
+              </Label>
+              <RadioGroup
+                name="boughtStatus"
+                value={boughtStatus}
+                onValueChange={setBoughtStatus}
+                className="flex space-x-4"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="owned" id="owned" />
+                  <Label htmlFor="owned">Owned</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="wanted" id="wanted" />
+                  <Label htmlFor="wanted">Wanted</Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            {boughtStatus === "owned" && (
+              <div className="space-y-2">
+                <Label className="text-md font-semibold" htmlFor="boughtDate">
+                  Bought Date
+                </Label>
+                <Input required id="boughtDate" name="boughtDate" type="date" />
+              </div>
+            )}
+
+            <Button type="submit" className="w-full" disabled={!selectedGame}>
+              Add Game
+            </Button>
+          </form>
+        </div>
       </CardContent>
     </Card>
   );
