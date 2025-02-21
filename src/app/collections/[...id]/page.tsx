@@ -2,6 +2,7 @@
 
 import { deleteGame } from "@/app/actions/gameActions";
 import AddGameForm from "@/components/addGameForm";
+import GameCard from "@/components/games/GameCard";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
@@ -17,9 +18,8 @@ import type { SelectGameEntry } from "@/db/schema/gameEntry";
 import { useDebounce } from "@/hooks/use-debounce";
 import { getGameEntriesByCollection, getPlatforms } from "@/lib/queries";
 import { DialogTitle } from "@radix-ui/react-dialog";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 
-import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 
@@ -144,36 +144,12 @@ export default function CollectionPage() {
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6">
             {games.map((game) => (
-              <Card key={game.id} className="overflow-hidden">
-                <div className="relative aspect-[3/4] w-full">
-                  <Image
-                    src={game.imageUrl || "/placeholder.svg"}
-                    alt={game.title || "Game cover"}
-                    fill
-                    className={`object-cover ${!game.bought ? "grayscale" : ""}`}
-                  />
-                </div>
-                <div className="p-4">
-                  <h2 className="font-semibold text-lg mb-2 truncate">
-                    {game.title}
-                  </h2>
-                  <div className="flex justify-between items-center">
-                    <span
-                      className={`px-2 py-1 rounded-full text-sm ${game.bought ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}`}
-                    >
-                      {game.bought ? "Owned" : "Wanted"}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDelete(game.id)}
-                      disabled={false}
-                    >
-                      <Trash2 className="h-4 w-4 text-red-500" />
-                    </Button>
-                  </div>
-                </div>
-              </Card>
+              <GameCard
+                key={game.id}
+                game={game}
+                handleDelete={handleDelete}
+                platforms={platforms}
+              />
             ))}
           </div>
           <div className="flex justify-between items-center mt-6">

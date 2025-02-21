@@ -1,51 +1,80 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { SelectGameEntry } from "@/db/schema/gameEntry";
-import { getGame } from "@/lib/queries";
+import { Trash2 } from "lucide-react";
 import Image from "next/image";
-import { Suspense } from "react";
+import { useMemo } from "react";
 
-export default async function GameCard({
-  game: gameEntry,
+// Hash function to generate a consistent number from a string
+const hashCode = (str: string): number => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  return hash;
+};
+
+// Function to generate a pastel color based on the hash
+const generatePastelColor = (platform: string): string => {
+  const hash = hashCode(platform);
+  const hue = hash % 360;
+  return `hsl(${hue}, 70%, 80%)`;
+};
+
+const GameCard = ({
+  game,
+  handleDelete,
+  platforms,
 }: {
   game: SelectGameEntry;
-}) {
-  const game = await getGame(gameEntry.gameId);
+  handleDelete: (id: string) => void;
+  platforms: { id: string; name: string | null }[];
+}) => {
+  const platformColor = useMemo(
+    () => generatePastelColor(game.platformId),
+    [game.platformId]
+  );
 
   return (
-    <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg">
-      <Suspense fallback={<GameCardSkeleton />}>
-        <div className="relative aspect-[2/3] w-full bg-muted">
-          <Image
-            src={gameEntry.imageUrl}
-            alt={game?.title || "Game"}
-            fill
-            className={`object-contain transition-all duration-300 ${
-              !gameEntry.bought ? "grayscale" : ""
-            }`}
-          />
+    <Card key={game.id} className="overflow-hidden">
+      <div className="relative aspect-[3/4] w-full">
+        <Image
+          src={game.imageUrl || "/placeholder.svg"}
+          alt={game.title || "Game cover"}
+          fill
+          className={`object-cover ${!game.bought ? "grayscale" : ""}`}
+        />
+        {game.platformId && (
+          <span
+            className="absolute top-2 right-2 px-2 py-1 rounded-full text-xs font-semibold"
+            style={{ backgroundColor: platformColor, color: "#000" }}
+          >
+            {platforms.find((platform) => platform.id == game.platformId)?.name}
+          </span>
+        )}
+      </div>
+      <div className="p-4">
+        <h2 className="font-semibold text-lg mb-2 truncate">{game.title}</h2>
+        <div className="flex justify-between items-center">
+          <span
+            className={`px-2 py-1 rounded-full text-sm ${game.bought ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}`}
+          >
+            {game.bought ? "Owned" : "Wanted"}
+          </span>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => handleDelete(game.id)}
+            disabled={false}
+          >
+            <Trash2 className="h-4 w-4 text-red-500" />
+          </Button>
         </div>
-        <CardContent className="p-4">
-          <h3 className="font-semibold text-lg line-clamp-1">{game?.title}</h3>
-          {!gameEntry.bought && (
-            <span className="text-sm text-muted-foreground">Not purchased</span>
-          )}
-        </CardContent>
-      </Suspense>
+      </div>
     </Card>
   );
-}
+};
 
-function GameCardSkeleton() {
-  return (
-    <>
-      <div className="relative aspect-[16/9] w-full">
-        <Skeleton className="h-full w-full" />
-      </div>
-      <CardContent className="p-4">
-        <Skeleton className="h-6 w-3/4 mb-2" />
-        <Skeleton className="h-4 w-1/2" />
-      </CardContent>
-    </>
-  );
-}
+export default GameCard;
