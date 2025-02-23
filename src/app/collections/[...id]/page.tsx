@@ -16,7 +16,11 @@ import {
 } from "@/components/ui/select";
 import type { SelectGameEntry } from "@/db/schema/gameEntry";
 import { useDebounce } from "@/hooks/use-debounce";
-import { getGameEntriesByCollection, getPlatforms } from "@/lib/queries";
+import {
+  getGameEntriesByCollection,
+  getPlatforms,
+  OrderByField,
+} from "@/lib/queries";
 import { DialogTitle } from "@radix-ui/react-dialog";
 import { Plus } from "lucide-react";
 
@@ -40,6 +44,10 @@ export default function CollectionPage() {
     { id: string; name: string | null }[]
   >([]);
   const [selectedPlatform, setSelectedPlatform] = useState<string>("all");
+  const [selectedOrderBy, setSelectedOrderBy] = useState<OrderByField>("title");
+  const [selectedOrderDirection, setSelectedOrderDirection] = useState<
+    "asc" | "desc"
+  >("asc");
   const [isAddGameOpen, setIsAddGameOpen] = useState(false);
 
   const handleGameAdded = () => {
@@ -52,7 +60,13 @@ export default function CollectionPage() {
 
   useEffect(() => {
     fetchData(1, debouncedSearch);
-  }, [debouncedSearch, selectedPlatform, status]);
+  }, [
+    debouncedSearch,
+    selectedPlatform,
+    status,
+    selectedOrderBy,
+    selectedOrderDirection,
+  ]);
 
   useEffect(() => {
     async function fetchPlatforms() {
@@ -63,11 +77,19 @@ export default function CollectionPage() {
   }, []);
 
   const fetchData = async (page: number, query: string) => {
-    const result = await getGameEntriesByCollection(id, query, page, pageSize, {
-      wanted: status == "wanted",
-      bought: status == "bought",
-      platform: selectedPlatform !== "all" ? selectedPlatform : undefined,
-    });
+    const result = await getGameEntriesByCollection(
+      id,
+      query,
+      page,
+      pageSize,
+      selectedOrderBy,
+      selectedOrderDirection,
+      {
+        wanted: status == "wanted",
+        bought: status == "bought",
+        platform: selectedPlatform !== "all" ? selectedPlatform : undefined,
+      }
+    );
     setGames(result.games);
     setCollectionName(result.collectionName);
     setTotalCount(result.totalCount);
@@ -134,6 +156,35 @@ export default function CollectionPage() {
                   {platform.name}
                 </SelectItem>
               ))}
+            </SelectContent>
+          </Select>
+          <Select
+            value={selectedOrderBy}
+            onValueChange={(e) => {
+              setSelectedOrderBy(e as OrderByField);
+            }}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="order by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="title">Title</SelectItem>
+              <SelectItem value="boughtDate">Bought Date</SelectItem>
+              <SelectItem value="id">ID</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select
+            value={selectedOrderDirection}
+            onValueChange={(e) => {
+              setSelectedOrderDirection(e as "asc" | "desc");
+            }}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="order" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="asc">ASC</SelectItem>
+              <SelectItem value="desc">DESC</SelectItem>
             </SelectContent>
           </Select>
         </div>

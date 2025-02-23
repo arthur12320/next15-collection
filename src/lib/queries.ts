@@ -1,7 +1,7 @@
 "use server";
 import db from "@/db";
 import { gameEntry } from "@/db/schema";
-import { and, count, eq, ilike } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike } from "drizzle-orm";
 import { auth } from "../../auth";
 
 export const getCollections = async () => {
@@ -63,11 +63,16 @@ export const getGame = async (id: string) => {
   return game;
 };
 
+// Define valid order by fields
+export type OrderByField = "title" | "boughtDate" | "id";
+
 export const getGameEntriesByCollection = async (
   collectionId: string,
   query: string,
   page = 1,
   pageSize = 12,
+  orderBy: OrderByField = "boughtDate",
+  orderDirection: "asc" | "desc" = "desc",
   filters: { wanted?: boolean; bought?: boolean; platform?: string }
 ) => {
   const session = await auth();
@@ -84,6 +89,12 @@ export const getGameEntriesByCollection = async (
   const searchQuery = `%${query}%`;
   const offset = (page - 1) * pageSize;
 
+  // Validate orderBy field
+  const validOrderByFields: OrderByField[] = ["id", "title", "boughtDate"];
+  if (!validOrderByFields.includes(orderBy)) {
+    orderBy = "title";
+  }
+
   const gamesQuery = db.query.gameEntry.findMany({
     where: (gameEntry, { eq, and, ilike }) =>
       and(
@@ -92,10 +103,16 @@ export const getGameEntriesByCollection = async (
         ilike(gameEntry.title, searchQuery),
         ...(filters.wanted ? [eq(gameEntry.bought, false)] : []),
         ...(filters.bought ? [eq(gameEntry.bought, true)] : []),
-        ...(filters.platform ? [eq(gameEntry.platformId, filters.platform)] : [])
+        ...(filters.platform
+          ? [eq(gameEntry.platformId, filters.platform)]
+          : [])
       ),
     limit: pageSize,
     offset: offset,
+    orderBy:
+      orderDirection === "desc"
+        ? desc(gameEntry[orderBy])
+        : asc(gameEntry[orderBy]),
   });
 
   const totalCountQuery = db
@@ -108,7 +125,9 @@ export const getGameEntriesByCollection = async (
         ilike(gameEntry.title, searchQuery),
         ...(filters.wanted ? [eq(gameEntry.bought, false)] : []),
         ...(filters.bought ? [eq(gameEntry.bought, true)] : []),
-        ...(filters.platform ? [eq(gameEntry.platformId, filters.platform)] : [])
+        ...(filters.platform
+          ? [eq(gameEntry.platformId, filters.platform)]
+          : [])
       )
     );
 
