@@ -41,8 +41,7 @@ async function searchIGDBWithFlexibleTitle(
   // Remove common prefixes like "Nintendo" and special characters
   const cleanTitle = title
     .replace(/^(Nintendo|Sony|Microsoft)\s+/i, "")
-    .replace(/[:\-–]/g, " ")
-    .trim();
+    .replace(/[:\-–]/g, " ");
 
   // Split the title into words
   const titleWords = cleanTitle.split(/\s+/);
@@ -68,7 +67,7 @@ async function searchIGDBWithFlexibleTitle(
         Accept: "application/json",
         "Content-Type": "application/json",
       },
-      body: `where ${searchQuery} & (category = 0 | category = 8 | category = 9 | category = 4| category = 3); fields name,cover.url,genres.name; limit 10;`,
+      body: `where ${searchQuery} & (category = 0 | category = 8 | category = 9 | category = 4| category = 3); fields name,cover.url,genres.name; limit 50;`,
     });
 
     if (!response.ok) {
