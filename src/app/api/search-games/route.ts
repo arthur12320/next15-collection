@@ -62,12 +62,12 @@ async function searchIGDBWithFlexibleTitle(
     const response = await fetch(`${IGDB_API_URL}/games`, {
       method: "POST",
       headers: {
-        "Client-ID": IGDB_CLIENT_ID,
-        Authorization: `Bearer ${igdbAccessToken}`,
+        "Client-ID": IGDB_CLIENT_ID as string,
+        Authorization: `Bearer ${igdbAccessToken as string}`,
         Accept: "application/json",
         "Content-Type": "application/json",
       },
-      body: `where ${searchQuery} & (category = 0 | category = 8 | category = 9 | category = 4| category = 3); fields name,cover.url,genres.name; limit 50;`,
+      body: `where ${searchQuery}; fields name,cover.url,genres.name; limit 100;`,
     });
 
     if (!response.ok) {
@@ -122,7 +122,7 @@ export async function GET(request: NextRequest) {
       // Use the title from UPC database to search IGDB
       const igdbGames = await searchIGDBWithFlexibleTitle(
         upcItem.title,
-        igdbAccessToken
+        igdbAccessToken as string
       );
 
       if (igdbGames.length > 0) {
@@ -179,7 +179,10 @@ export async function GET(request: NextRequest) {
         genres: game.genres || [],
       });
     } else if (term) {
-      const games = await searchIGDBWithFlexibleTitle(term, igdbAccessToken);
+      const games = await searchIGDBWithFlexibleTitle(
+        term,
+        igdbAccessToken as string
+      );
       return NextResponse.json({
         games: games.map(
           (game: { id: string; name: string; cover: { url: string } }) => ({
