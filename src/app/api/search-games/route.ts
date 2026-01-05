@@ -185,12 +185,18 @@ export async function GET(request: NextRequest) {
       );
       return NextResponse.json({
         games: games.map(
-          (game: { id: string; name: string; cover: { url: string } }) => ({
+          (game: {
+            id: string;
+            name: string;
+            cover: { url: string };
+            genres: { name: string }[];
+          }) => ({
             id: game.id,
             name: game.name,
             cover_image: game.cover
               ? `https:${game.cover.url.replace("t_thumb", "t_cover_small")}`
               : null,
+            genres: game.genres ? game.genres.map((g) => g.name) : [],
           })
         ),
       });
