@@ -76,3 +76,53 @@ export async function deleteGame(gameId: string) {
     throw new Error("Failed to delete game from collection");
   }
 }
+
+const updateGameSchema = z.object({
+  id: z.string(),
+  title: z.string().min(1),
+  boughtStatus: z.enum(["owned", "wanted"]),
+  boughtDate: z.string().optional(),
+  platform: z.string(),
+});
+
+export async function updateGame(prevState: unknown, formData: FormData) {
+  const submission = parseWithZod(formData, {
+    schema: updateGameSchema,
+  });
+
+  if (submission.status !== "success") {
+    return { error: submission.error };
+  }
+
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { error: "You must be logged in to update a game" };
+  }
+
+  try {
+    const result = await db
+      .update(gameEntry)
+      .set({
+        title: submission.value.title,
+        platformId: submission.value.platform,
+        bought: submission.value.boughtStatus === "owned",
+        boughtDate:
+          submission.value.boughtStatus === "owned" &&
+          submission.value.boughtDate
+            ? new Date(submission.value.boughtDate)
+            : null,
+      })
+      .where(eq(gameEntry.id, submission.value.id))
+      .returning({ collectionId: gameEntry.collectionId });
+
+    if (result.length > 0) {
+      revalidatePath(`/collections/${result[0].collectionId}`);
+      revalidatePath("/collections");
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating game:", error);
+    return { error: "Failed to update game" };
+  }
+}
