@@ -17,6 +17,7 @@ import Image from "next/image";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { BarcodeScanner } from "./BarcodeScanner";
 import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "./ui/hover-card";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import {
   Select,
@@ -53,6 +54,7 @@ export default function AddGameForm({
   const [searchResults, setSearchResults] = useState<Partial<Game>[]>([]);
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
+  const [boughtDate, setBoughtDate] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const { toast } = useToast();
@@ -157,8 +159,8 @@ export default function AddGameForm({
       });
       setSelectedGame(null);
       setSearchTerm("");
-      setBoughtStatus("wanted");
-      setSelectedPlatform("");
+      // setBoughtStatus("wanted");
+      // setSelectedPlatform("");
       if (onGameAdded) {
         onGameAdded();
       }
@@ -261,12 +263,32 @@ export default function AddGameForm({
               {searchResults.length > 0 && (
                 <ul className="mt-2 border rounded-md shadow-sm max-h-60 overflow-y-auto">
                   {searchResults.map((game) => (
-                    <li
-                      key={game.id}
-                      className="p-2 hover:bg-gray-100 cursor-pointer"
-                      onClick={() => handleGameSelect(game)}
-                    >
-                      {game.name}
+                    <li key={game.id}>
+                      <HoverCard openDelay={150}>
+                        <HoverCardTrigger asChild>
+                          <div
+                            className="p-2 hover:bg-gray-100 cursor-pointer"
+                            onClick={() => handleGameSelect(game)}
+                          >
+                            {game.name}
+                          </div>
+                        </HoverCardTrigger>
+
+                        <HoverCardContent
+                          side="right"
+                          align="start"
+                          className="w-64"
+                        >
+                          <h4 className="font-semibold">{game.name}</h4>
+                          <Image
+                            src={game.cover_image || "/placeholder.svg"}
+                            alt={game?.name || "No Image"}
+                            width={200}
+                            height={300}
+                            className="rounded-md object-cover mx-auto"
+                          />
+                        </HoverCardContent>
+                      </HoverCard>
                     </li>
                   ))}
                 </ul>
@@ -279,7 +301,7 @@ export default function AddGameForm({
                   <Label className="text-md font-semibold">Game Image</Label>
                   <Image
                     src={selectedGame.cover_image || "/placeholder.svg"}
-                    alt={selectedGame.name}
+                    alt={selectedGame?.name}
                     width={200}
                     height={300}
                     className="rounded-md object-cover mx-auto"
@@ -350,7 +372,14 @@ export default function AddGameForm({
                 <Label className="text-md font-semibold" htmlFor="boughtDate">
                   Bought Date
                 </Label>
-                <Input required id="boughtDate" name="boughtDate" type="date" />
+                <Input
+                  required
+                  id="boughtDate"
+                  name="boughtDate"
+                  type="date"
+                  value={boughtDate}
+                  onChange={(e) => setBoughtDate(e.target.value)}
+                />
               </div>
             )}
 

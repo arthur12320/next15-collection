@@ -1,6 +1,5 @@
 "use client";
 
-import { deleteGame } from "@/app/actions/gameActions";
 import AddGameForm from "@/components/addGameForm";
 import GameCard from "@/components/games/GameCard";
 import { Button } from "@/components/ui/button";
@@ -16,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import type { SelectGameEntry } from "@/db/schema/gameEntry";
 import { useDebounce } from "@/hooks/use-debounce";
+import GameDetailsModal from "@/components/games/GameDetailsModal";
 import {
   getGameEntriesByCollection,
   getPlatforms,
@@ -49,11 +49,19 @@ export default function CollectionPage() {
     "asc" | "desc"
   >("asc");
   const [isAddGameOpen, setIsAddGameOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedGame, setSelectedGame] = useState<SelectGameEntry | null>(
+    null
+  );
 
   const handleGameAdded = () => {
     setIsAddGameOpen(false);
     fetchData(1, debouncedSearch);
     // You might want to refresh the collection listing here
+  };
+
+  const handleGameDeleted = () => {
+    fetchData(currentPage, debouncedSearch);
   };
 
   const pageSize = 12; // Number of items per page
@@ -103,11 +111,6 @@ export default function CollectionPage() {
 
   const handlePageChange = (newPage: number) => {
     startTransition(() => fetchData(newPage, debouncedSearch));
-  };
-
-  const handleDelete = (gameId: string) => {
-    deleteGame(gameId);
-    fetchData(currentPage, debouncedSearch);
   };
 
   return (
@@ -198,7 +201,10 @@ export default function CollectionPage() {
               <GameCard
                 key={game.id}
                 game={game}
-                handleDelete={handleDelete}
+                onClick={() => {
+                  setSelectedGame(game);
+                  setIsModalOpen(true);
+                }}
                 platforms={platforms}
               />
             ))}
@@ -225,6 +231,14 @@ export default function CollectionPage() {
         <p className="text-center text-gray-500">
           No games in this collection yet.
         </p>
+      )}
+      {selectedGame && (
+        <GameDetailsModal
+          isOpen={isModalOpen}
+          onOpenChange={setIsModalOpen}
+          game={selectedGame}
+          onGameDeleted={handleGameDeleted}
+        />
       )}
       <Dialog open={isAddGameOpen} onOpenChange={setIsAddGameOpen}>
         <DialogTrigger asChild>

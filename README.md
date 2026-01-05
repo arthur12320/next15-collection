@@ -1,48 +1,73 @@
-This is a a next15 project of a games collection.
+# next15-collection
 
-TODO:
+Uma versão nova de um app de “coleções/games” usando Next.js 15 — um projeto de demonstração/portfólio para ilustrar como montar um sistema com frontend + backend leve, com funcionalidades de CRUD, autenticação, banco e mais.
 
-- [x] setup tailwindCSS
-- [x] setup shadcdn
-- [x] setup DB [drizzle-orm + vercel postgres]
-  - [ ] setup real schema
-  - [ ] setup seed
-  - [ ] setup queries
-  - [ ] setup starting migration
-- [x] add typesafe env vars
-- [ ] setup image upload [vercel blob]
-- [ ] setup auth
-  - [x] setup next-auth
-  - [x] setup google oauth
-  - [x] connect to database
-  - [ ] setup login/logout/signin redirects
-  - [x] see if its possible to use middleware
-  - [ ] finish following the [tutorial](https://www.youtube.com/watch?v=1MTyCvS05V4&t=7812s&ab_channel=CodeWithAntonio)
-- [x] add navbar
-- [ ] add footer
-- [x] add theme toggle
-- [ ] add loading page for suspense
-- [ ] add pages
-  - [ ] home
-  - [ ] collections
-    - [x] add optimistic updates
-    - [ ] add test for collection id
-    - [ ] add pagination
-    - [x] add exclude option
-    - [x] add create collection form
-    - [ ] add collection delete with optimistic updates??
-    - [ ] add collection card
-    - [ ] add collection page
-  - [ ] games
-    - [x] add create game form
-    - [ ] add form validation !
-  - [ ] login
-  - [ ] register
+---
 
-## Features TODO
+## 🎯 Visão Geral
 
-- [ ] Better pagination
-- [x] add initial filters
-- [ ] add all other filters
-- [ ] add stuff to make PWA work better
-- [ ] add edit functionality
+O objetivo deste projeto é construir uma **aplicação de “coleções de jogos”** (collection app) usando Next.js 15 como base. O app permite gerenciar coleções e games, com estrutura pensada para backend + frontend, banco de dados, autenticação e uma arquitetura moderna — servindo como base ou boilerplate para projetos mais robustos.
+
+Link para a versão deployada: [next15-collection.vercel.app](https://next15-collection.vercel.app)
+
+---
+
+## 🧰 Tecnologias e Ferramentas Utilizadas
+
+- Next.js 15
+- TypeScript
+- (Possível stack de banco — usando Drizzle ORM + banco Postgres via Vercel — a ser finalizada)
+- Tailwind CSS (planejado)
+- Configurações de ESLint / linting / boas práticas de código
+- PNPM / NPM para gerenciamento de pacotes
+- Estrutura modular (pastas `src/`, configuração com `next.config.*`, etc.)
+
+---
+
+## 📂 Estrutura do Projeto (diretórios principais)
+
+/
+├── .vscode/ # Configurações do editor (opcional)
+├── src/ # Código fonte da aplicação
+├── .env.example # Exemplo de variáveis de ambiente
+├── .eslintrc.json # Configurações de linting
+├── next.config.mjs # Configurações do Next.js
+├── tailwind.config.ts # Configurações do Tailwind (quando implementado)
+├── package.json # Dependências e scripts
+├── pnpm-lock.yaml # Lock file (ou package-lock.json se usar NPM)
+└── README.md # Este arquivo
+
+Essa estrutura ajuda na organização, escalabilidade e manutenção do código.
+
+---
+
+## 🚀 Como Rodar o Projeto Localmente
+
+### Pré-requisitos
+
+- Node.js (versão recomendada: 14+ ou LTS atual)
+- PNPM ou NPM
+
+### Passos
+
+```bash
+# Clone este repositório
+git clone https://github.com/arthur12320/next15-collection.git
+
+# Vá para a pasta do projeto
+cd next15-collection
+
+# Instale as dependências
+pnpm install   # ou npm install
+
+# Crie um arquivo .env com as variáveis necessárias (copie de .env.example)
+cp .env.example .env
+# — Preencha as variáveis de ambiente conforme necessário (banco, chaves, etc.)
+
+# Rode o servidor em modo de desenvolvimento
+pnpm dev       # ou npm run dev
+
+# Abra no navegador em: http://localhost:3000
+```
+
+Se você configurar banco de dados, autenticação ou variáveis, lembre-se de ajustar o .env adequadamente.

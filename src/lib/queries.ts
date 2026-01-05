@@ -146,3 +146,28 @@ export const getGameEntriesByCollection = async (
     totalPages,
   };
 };
+
+export const getGamesByCollectionAndPlatform = async (
+  collectionId: string,
+  platformId?: string,
+  boughtStatus?: string
+) => {
+  const session = await auth();
+  if (!session?.user) return [];
+
+  const games = await db.query.gameEntry.findMany({
+    where: (gameEntry, { eq, and }) =>
+      and(
+        eq(gameEntry.collectionId, collectionId),
+        eq(gameEntry.userId, session.user.id as string),
+        platformId && platformId !== "all"
+          ? eq(gameEntry.platformId, platformId)
+          : undefined,
+        boughtStatus && boughtStatus !== "all"
+          ? eq(gameEntry.bought, boughtStatus === "true")
+          : undefined
+      ),
+  });
+
+  return games;
+};
