@@ -3,6 +3,7 @@
 import { deleteGame, updateGame } from "@/app/actions/gameActions";
 import { getPlatforms } from "@/app/actions/platformActions";
 
+import { addGameToSet, getSets } from "@/app/actions/setsActions";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -23,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SelectSet } from "@/db/schema";
 import type { SelectGameEntry } from "@/db/schema/gameEntry";
 import type { SelectPlatform } from "@/db/schema/platforms";
 import { useToast } from "@/hooks/use-toast";
@@ -42,6 +44,8 @@ export default function GameDetailsModal({
 }) {
   const [formResult, formAction] = useActionState(updateGame, undefined);
   const [platforms, setPlatforms] = useState<SelectPlatform[]>([]);
+  const [sets, setSets] = useState<SelectSet[]>([]);
+  const [selectedSetId, setSelectedSetId] = useState<string | undefined>();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -49,7 +53,13 @@ export default function GameDetailsModal({
       const fetchedPlatforms = await getPlatforms();
       setPlatforms(fetchedPlatforms);
     }
+
+    async function fetchSets() {
+      const fetchedSets = await getSets();
+      setSets(fetchedSets.data || []);
+    }
     fetchPlatforms();
+    fetchSets();
   }, []);
 
   const handleSubmit = async (formData: FormData) => {
@@ -67,6 +77,33 @@ export default function GameDetailsModal({
         description: "Game updated!",
       });
       onOpenChange(false);
+    }
+  };
+
+  const handleAddToSet = async () => {
+    if (!selectedSetId) {
+      toast({
+        title: "Error",
+        description: "Please select a set.",
+        variant: "destructive",
+      });
+      return;
+    }
+    try {
+      // Call your action to add the game to the set here
+      await addGameToSet(selectedSetId, game.id);
+      toast({
+        title: "Success",
+        description: "Game added to set!",
+      });
+      onOpenChange(false);
+    } catch (error) {
+      console.log(error);
+      toast({
+        title: "Error",
+        description: "Failed to add game to set.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -192,10 +229,45 @@ export default function GameDetailsModal({
                   </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
-                  <DialogClose>
+                  <DialogClose asChild>
                     <Button variant="outline">Cancel</Button>
                   </DialogClose>
                   <Button onClick={handleDelete}>Delete</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button type="button" variant="secondary">
+                  Add to Set
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add to a set</DialogTitle>
+
+                  <Select
+                    name="platform"
+                    value={selectedSetId}
+                    onValueChange={setSelectedSetId}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select set" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {sets.map((set) => (
+                        <SelectItem key={set.id} value={set.id}>
+                          {set.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </DialogHeader>
+                <DialogFooter>
+                  <DialogClose asChild>
+                    <Button variant="outline">Cancel</Button>
+                  </DialogClose>
+                  <Button onClick={handleAddToSet}>Add</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
