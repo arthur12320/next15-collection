@@ -27,6 +27,7 @@ export default async function Navbar() {
     { name: "Home", href: "/" },
     { name: "Collections", href: "/collections" },
     { name: "Add Game", href: "/addGame" },
+    { name: "Set", href: "/sets" },
     { name: "Roulette", href: "/roulette" },
   ];
 
